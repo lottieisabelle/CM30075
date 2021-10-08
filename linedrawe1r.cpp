@@ -25,6 +25,10 @@
 
 int draw_x_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
 {
+  int   x     = x0;
+  int   wy    = y0;
+  
+
   int xdir = 1;
   if (x0 > x1) {
     xdir = -1;
@@ -35,11 +39,8 @@ int draw_x_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
     ydir = -1;
   }
 
-  int   x     = x0;
-  int   wy    = y0;
-
   int   dy    = y1-y0;
-  //dy    = dy * ydir;
+  dy    = dy * ydir;
   int   dx    = x1-x0;
   dx    = dx * xdir;
   int   fy    = dy/2;
@@ -47,7 +48,7 @@ int draw_x_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
   while (x != x1)
   {
     fb->plotPixel(x, (int)wy, 1.0f, 1.0f, 1.0f);
-    x += xdir;
+    x += 1;
 
     fy += dy;
 
@@ -55,8 +56,6 @@ int draw_x_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
       wy += 1;
       fy -= dx;
     }
-
-    
   }
 
 }
@@ -85,7 +84,7 @@ int draw_y_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
   while (y != y1)
   {
     fb->plotPixel((int)wx, y, 1.0f, 1.0f, 1.0f);
-    y += ydir;
+    y += 1;
 
     fx += dx;
 

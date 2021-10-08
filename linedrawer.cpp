@@ -25,34 +25,37 @@
 
 int draw_x_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
 {
-  int   dy    = y1-y0;
-  int   dx    = x1-x0;
-
   int xdir = 1;
   if (x0 > x1) {
     xdir = -1;
   }
 
   int ydir = 1;
-  if (dy < 0) {
+  if (y0 > y1) {
     ydir = -1;
-    dy   = -dy;
   }
 
-  int D = (2*dy)-dx;
-  
   int   x     = x0;
-  int   y    = y0;
+  int   wy    = y0;
+
+  int   dy    = y1-y0;
+  dy    = dy * ydir;
+  int   dx    = x1-x0;
+  dx    = dx * xdir;
+  int   fy    = dy/2;
   
-  while (x != x1)
+  while (x <= x1)
   {
-    fb->plotPixel(x, (int)y, 1.0f, 1.0f, 1.0f);
-    if (D > 0) {
-        y += ydir;
-        D = D + (2*(dy-dx));
-    } else {
-      D = D + 2*dy;
+    fb->plotPixel(x, (int)wy, 1.0f, 1.0f, 1.0f);
+    x += xdir;
+
+    fy += dy;
+
+    if (fy >= dx) {
+      wy += 1;
+      fy -= dx;
     }
+
     
   }
 
@@ -79,7 +82,7 @@ int draw_y_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
   dx    = dx * xdir;
   int   fx    = dx/2;
   
-  while (y != y1)
+  while (y <= y1)
   {
     fb->plotPixel((int)wx, y, 1.0f, 1.0f, 1.0f);
     y += ydir;
