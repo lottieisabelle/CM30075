@@ -29,4 +29,27 @@ PolyMesh::PolyMesh(char *file, Transform *transform)
 
 void PolyMesh::do_construct(char *file, Transform *transform)
 {
+  // open the file
+  std::ifstream f_reader(file);
+  std::string line;
+
+  // read the lines of the file
+  if(f_reader.is_open()){
+    // parse the header
+    std::getline(f_reader,line);
+    printf("Header: %s\n",line.c_str());
+
+    // parse the number of vertices line
+    std::getline(f_reader,line);
+    printf("Line 2: %s\n",line.c_str());
+
+    for (int i = 15; i < 19; i++) {
+      
+
+      cout << i << "\n";
+    }
+    
+  }
+
+  f_reader.close();
 }

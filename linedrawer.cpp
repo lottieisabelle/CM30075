@@ -42,6 +42,7 @@ int draw_x_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
   dy    = dy * ydir;
   int   dx    = x1-x0;
   dx    = dx * xdir;
+
   int   fy    = dy/2;
   
   while (x != x1)
@@ -56,7 +57,6 @@ int draw_x_line(FrameBuffer *fb, int x0, int y0, int x1, int y1)
       fy -= dx;
     }
 
-    
   }
 
 }
