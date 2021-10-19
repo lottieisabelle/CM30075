@@ -138,7 +138,10 @@ void PolyMesh::do_construct(char *file, Transform *transform)
       while (ss >> index_value){
         // store triangle face vertex data in array
         if(axis_count != 0){
-          PolyMesh::triangle[i][axis_count] = std::stoi(index_value);
+
+          int number = std::stoi(index_value);
+          number -= 1;
+          PolyMesh::triangle[i][axis_count] = number;
         }
         axis_count++;
         //cout << value << "\n";
