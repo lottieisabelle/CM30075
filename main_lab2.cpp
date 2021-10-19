@@ -26,6 +26,9 @@
 #include "linedrawer.h"
 #include "polymesh.h"
 
+#include <iostream>
+
+
 int main(int argc, char *argv[])
 {
 
@@ -55,9 +58,11 @@ int main(int argc, char *argv[])
     draw_line(fb, (int)x2, (int)y2, (int)x0, (int)y0);
 
   }
-  
+
   // Output the framebuffer.
   fb->writeRGBFile((char *)"test.ppm");
+
+  
 
   return 0;
   
