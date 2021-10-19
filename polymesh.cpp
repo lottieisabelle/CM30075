@@ -97,14 +97,12 @@ void PolyMesh::do_construct(char *file, Transform *transform)
       while (ss >> value){
         if (axis_count == 0){
           x = std::stof(value);
-          axis_count += 1;
         } else if (axis_count == 1){
           y = std::stof(value);
-          axis_count += 1;
         } else if (axis_count == 2){
           z = std::stof(value);
-          axis_count += 1;
         }
+        axis_count++;
         //cout << value << "\n";
       }
       // store vertex data in array
@@ -118,10 +116,22 @@ void PolyMesh::do_construct(char *file, Transform *transform)
 
     // loop through and process all lines that correspond to triangle coordinate pointers
     for (int i = 0; i < triangle_count; i++) {
-      
+      std::getline(f_reader,line);
+      int axis_count = 0;
+      istringstream ss(line.c_str());
 
+      string index_value;
+      while (ss >> index_value){
+        // store triangle face vertex data in array
+        if(axis_count != 0){
+          triangles[i][axis_count] = std::stoi(index_value);
+        }
+        axis_count++;
+        //cout << value << "\n";
+      }
     }
 
+    cout << "All faces processed. \n";
 
   }
 
