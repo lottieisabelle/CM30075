@@ -16,7 +16,7 @@ class PolyMesh {
 public:
 	int vertex_count;
 	int triangle_count;
-        Vertex *vertex;
+    Vertex *vertex;
 	TriangleIndex *triangle;
 
 	void do_construct(char *file, Transform *transform);
