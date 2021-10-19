@@ -35,6 +35,7 @@ PolyMesh::PolyMesh(char *file)
 PolyMesh::PolyMesh(char *file, Transform *transform)
 {
   this->do_construct(file, transform);
+
 }
 
 void PolyMesh::do_construct(char *file, Transform *transform)
@@ -108,6 +109,11 @@ void PolyMesh::do_construct(char *file, Transform *transform)
         //cout << value << "\n";
       }
       // store vertex data in array
+      //vertices[i] = Vertex(x, y, z);
+
+      // apply transform
+      transform->apply(Vertex(x, y, z));
+
       vertices[i] = Vertex(x, y, z);
     }
     cout << "All vertices processed. \n";
