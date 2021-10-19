@@ -25,9 +25,12 @@
 #include "framebuffer.h"
 #include "linedrawer.h"
 #include "polymesh.h"
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
+    printf("asdasd");
+
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(2048,2048);
 
@@ -36,6 +39,9 @@ int main(int argc, char *argv[])
 
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
+
+  printf("%d\n",pm->triangle_count);
+  printf("asdasd");
 
   // For each triangle in the model,
   for (int i = 0; i< pm->triangle_count; i += 1)
@@ -48,10 +54,14 @@ int main(int argc, char *argv[])
     float x2 = (pm->vertex[pm->triangle[i][2]].x/pm->vertex[pm->triangle[i][2]].z)*2000.0 + 1024.0;
     float y2 = (pm->vertex[pm->triangle[i][2]].y/pm->vertex[pm->triangle[i][2]].z)*-2000.0 + 1024.0;
 
+    printf("egg0");
+    
     // then draw the three edges.
     draw_line(fb, (int)x0, (int)y0, (int)x1, (int)y1);
     draw_line(fb, (int)x1, (int)y1, (int)x2, (int)y2);
     draw_line(fb, (int)x2, (int)y2, (int)x0, (int)y0);
+    printf("egg1");
+
   }
   
   // Output the framebuffer.

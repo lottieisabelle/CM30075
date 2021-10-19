@@ -84,8 +84,12 @@ void PolyMesh::do_construct(char *file, Transform *transform)
     cout << "triangle_count : " << triangle_count << "\n";
 
     // create arrays to store vertices and triangles
-    Vertex vertices[3644]; // get numbers from text file
-    TriangleIndex triangles[6320]; // get numbers from text file
+    // Vertex vertices[3644]; // get numbers from text file
+    // TriangleIndex triangles[6320]; // get numbers from text file
+
+    PolyMesh::vertex = new Vertex[PolyMesh::vertex_count];
+    PolyMesh::triangle = new TriangleIndex[PolyMesh::triangle_count];
+
 
     // loop through and process all lines that correspond to vertex coordinates
     for (int i = 0; i < vertex_count; i++) {
@@ -111,10 +115,12 @@ void PolyMesh::do_construct(char *file, Transform *transform)
       // store vertex data in array
       //vertices[i] = Vertex(x, y, z);
 
-      // apply transform
-      transform->apply(Vertex(x, y, z));
+      PolyMesh::vertex[i] = Vertex(x, y, z);
 
-      vertices[i] = Vertex(x, y, z);
+      // apply transform
+      transform->apply(PolyMesh::vertex[i]);
+
+      
     }
     cout << "All vertices processed. \n";
 
@@ -132,7 +138,7 @@ void PolyMesh::do_construct(char *file, Transform *transform)
       while (ss >> index_value){
         // store triangle face vertex data in array
         if(axis_count != 0){
-          triangles[i][axis_count] = std::stoi(index_value);
+          PolyMesh::triangle[i][axis_count] = std::stoi(index_value);
         }
         axis_count++;
         //cout << value << "\n";
