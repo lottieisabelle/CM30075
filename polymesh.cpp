@@ -130,13 +130,8 @@ void PolyMesh::do_construct(char *file, Transform *transform)
         //cout << value << "\n";
       }
     }
-
     cout << "All faces processed. \n";
-
   }
-
-
-
 
   f_reader.close();
 }
