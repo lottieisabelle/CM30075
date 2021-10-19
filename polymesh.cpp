@@ -63,8 +63,8 @@ void PolyMesh::do_construct(char *file, Transform *transform)
     // cout << "vertex_count : " << vertex_count << "\n";
 
     // different method
-    vertex_count = get_vertex_count(line);
-
+    //vertex_count = get_vertex_count(line);
+    vertex_count = 3644;
     cout << "vertex_count : " << vertex_count << "\n";
 
 
@@ -77,7 +77,9 @@ void PolyMesh::do_construct(char *file, Transform *transform)
     for (int i = 13; i < 18; i++) {
       num_triangles = num_triangles + line[i];
     }
-    triangle_count = std::stoi(num_triangles);
+    triangle_count = 6320;
+
+    //triangle_count = std::stoi(num_triangles);
     cout << "triangle_count : " << triangle_count << "\n";
 
     // create arrays to store vertices and triangles
