@@ -47,6 +47,9 @@ int main(int argc, char *argv[])
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
 
+
+// take out
+
   // For each triangle in the model,
   for (int i = 0; i< pm->triangle_count; i += 1)
   {
@@ -65,7 +68,13 @@ int main(int argc, char *argv[])
 
   }
 
-  Sphere ball = Sphere(Vertex (0.0,0.0,0.0), 1);
+
+// each  verticy is a b c, make a plae, then find intersection from each plane
+// for each triangle in traingale count
+
+
+
+  Sphere ball = Sphere(Vertex (5,5,5), 1);
 
   // for each pixel in image
   for (int wx = 0; wx < screen_width; wx+=1){
@@ -79,12 +88,14 @@ int main(int argc, char *argv[])
       d.normalise();
 
       Ray ray = Ray(p,d);
-      int t = 999999999;
+      float t = 999999999.0;
       Object closest = Object();
 
       Hit touch = Hit();
 
       ball.intersection(ray, touch);
+
+      // put loop for checking each triangle plane
       float r = 0;
       float g = 0;
       float b = 0;
@@ -96,13 +107,16 @@ int main(int argc, char *argv[])
       }
 
       //pos = ray.position(t);
-      fb->plotPixel(wx,wy,r,g,b);
+      //fb->plotPixel(wx,wy,r,g,b);
+      fb->plotDepth(wx,wy,t);
 
     }
   }
 
   // Output the framebuffer.
-  fb->writeRGBFile((char *)"test.ppm");
+  //fb->writeRGBFile((char *)"test.ppm");
+  fb->writeDepthFile((char *)"test.ppm");
+
 
   return 0;
   
