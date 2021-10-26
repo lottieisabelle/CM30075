@@ -25,15 +25,21 @@
 #include "framebuffer.h"
 #include "linedrawer.h"
 #include "polymesh.h"
+#include "ray.h"
+#include "sphere.h"
 
 #include <iostream>
+#include <math.h>
+
+#define screen_width 2048
+#define screen_height 2048
 
 
 int main(int argc, char *argv[])
 {
 
   // Create a framebuffer
-  FrameBuffer *fb = new FrameBuffer(2048,2048);
+  FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
 
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
   Transform *transform = new Transform(1.0f, 0.0f, 0.0f, 0.0f,0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 7.0f,0.0f,0.0f,0.0f,1.0f);
@@ -58,6 +64,50 @@ int main(int argc, char *argv[])
     draw_line(fb, (int)x2, (int)y2, (int)x0, (int)y0);
 
   }
+
+  Sphere ball = Sphere(Vertex (55,55,55), 25);
+
+  
+  
+  Ray rays = Ray[][];
+  rays = new Ray[screen_width][screen_height];
+
+  // for each pixel in image
+  for (int wx = 0; wx < screen_width; wx+=1){
+    for (int wy = 0; wy < screen_height; wy+=1){
+      // generate a ray
+      Vertex p = Vertex(0,0,0);
+      int x = -1 + wx/1024;
+      int y = -1 + wy/1024;
+      int z = 1;
+      Vector d = Vector(x,y,z);
+      d.normalise();
+
+      Ray ray = Ray(p,d);
+      int t = INFINITY;
+
+      Hit new_t = Hit();
+
+      ball->intersection(ray, new_t);
+
+
+    }
+  }
+
+
+  // code from slides
+  for each (x, y) in (screen_width, screen_height){
+	  ray = camera_model(x, y); t = infinity; closest = null;
+
+    for each obj in scene {
+      if (obj.intersect(ray, &new_t) == true){
+        if (new_t < t) { t = new_t; closest = obj;}
+      }
+    }
+	  pos = ray.position(t); draw(x, y, closest.colour(pos));
+  }
+  // code from slides end
+
 
   // Output the framebuffer.
   fb->writeRGBFile((char *)"test.ppm");
