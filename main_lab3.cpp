@@ -11,9 +11,9 @@
  *
  * On linux.bath.ac.uk:
  *
- * Compile the code using g++ -o lab2executable main_lab3.cpp framebuffer.cpp linedrawer.cpp polymesh.cpp -lm
+ * Compile the code using g++ -o lab3executable main_lab3.cpp framebuffer.cpp linedrawer.cpp polymesh.cpp sphere.cpp -lm
  *
- * Execute the code using ./lab2executable
+ * Execute the code using ./lab3executable
  *
  * This will produce an image file called test.ppm. You can convert this a png file for viewing using
  *
@@ -65,12 +65,7 @@ int main(int argc, char *argv[])
 
   }
 
-  Sphere ball = Sphere(Vertex (55,55,55), 25);
-
-  
-  
-  Ray rays = Ray[][];
-  rays = new Ray[screen_width][screen_height];
+  Sphere ball = Sphere(Vertex (0.0,0.0,0.0), 1);
 
   // for each pixel in image
   for (int wx = 0; wx < screen_width; wx+=1){
@@ -84,35 +79,30 @@ int main(int argc, char *argv[])
       d.normalise();
 
       Ray ray = Ray(p,d);
-      int t = INFINITY;
+      int t = 999999999;
+      Object closest = Object();
 
-      Hit new_t = Hit();
+      Hit touch = Hit();
 
-      ball->intersection(ray, new_t);
+      ball.intersection(ray, touch);
+      float r = 0;
+      float g = 0;
+      float b = 0;
 
-
-    }
-  }
-
-
-  // code from slides
-  for each (x, y) in (screen_width, screen_height){
-	  ray = camera_model(x, y); t = infinity; closest = null;
-
-    for each obj in scene {
-      if (obj.intersect(ray, &new_t) == true){
-        if (new_t < t) { t = new_t; closest = obj;}
+      if (touch.t < t){
+        t = touch.t;
+        closest = ball;
+        r = 1;
       }
-    }
-	  pos = ray.position(t); draw(x, y, closest.colour(pos));
-  }
-  // code from slides end
 
+      //pos = ray.position(t);
+      fb->plotPixel(wx,wy,r,g,b);
+
+    }
+  }
 
   // Output the framebuffer.
   fb->writeRGBFile((char *)"test.ppm");
-
-  
 
   return 0;
   
