@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
   // for each section in the mapped size image
   for (float ray_x = -1.0; ray_x < 1.0; ray_x+=xInt){
     for (float ray_y = -1.0; ray_y < 1.0; ray_y+=yInt){
+      bool hit = false;
       float ray_z = 1;
       float closest_plot = FLT_MAX;
 
@@ -93,9 +94,10 @@ int main(int argc, char *argv[])
         // if you multiply ray.direction by d, then you get the point on the plane
         float d = dir.dot(N)/ray.direction.dot(N);
         if (d < 0){
+          // not intersecting
           continue;
         }
-
+        hit = true;
         Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d,camera.z+ray.direction.z*d);
 
         // now need to know if the point P is inside the triangle on the plane
@@ -119,9 +121,12 @@ int main(int argc, char *argv[])
         }   
       }
 
-      fb->plotDepth(xInt,yInt,closest_plot);
+      if (hit==false){
+        fb->plotDepth(xInt,yInt,0);
+      } else {
+        fb->plotDepth(xInt,yInt,closest_plot);
+      }
       //printf("triangle done");
-
     }
   }
 
