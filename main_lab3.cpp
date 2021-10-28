@@ -32,8 +32,8 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 256
-#define screen_height 256
+#define screen_width 512
+#define screen_height 512
 
 Vector getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
@@ -73,9 +73,9 @@ int main(int argc, char *argv[])
         Vertex c = pm->vertex[pm->triangle[i][2]];
 
         // create vectors
-        Vector ab ((b.x-a.x),(b.y-a.y),(b.z-a.z));
-        Vector ac ((c.x-a.x),(c.y-a.y),(c.z-a.z));
-        Vector bc ((c.x-b.x),(c.y-b.y),(c.z-b.z));
+        Vector ab = getDirection(a,b);
+        Vector ac = getDirection(a,c);
+        Vector bc = getDirection(b,c);
 
         // find the normal to the plane abc
         Vector N;
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
         ray.direction.normalise();
 
         // get direction vector between the camera (0,0,0) and point on plane e.g. a
-        Vector dir (a.x-camera.x,a.y-camera.y,a.z-camera.z);
+        Vector dir = getDirection(camera,a);
 
         // if you multiply ray.direction by d, then you get the point on the plane
         float d = dir.dot(N)/ray.direction.dot(N);
