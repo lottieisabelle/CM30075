@@ -142,19 +142,27 @@ int main(int argc, char *argv[])
         if ((a_normal.dot(b_normal) > 0) && (b_normal.dot(c_normal) > 0)){
           if(d < closest_plot){
             closest_plot = d;
-            //printf("closest plot: %f\n",closest_plot);
+
+            printf("closest plot: %f\n",closest_plot);
           }
-        }   
+        }  
+        int w = (ray_x+1)*(screen_width/2);
+        int h = (ray_y+1)*(screen_height/2);
+        fb->plotDepth(w,h,closest_plot);
+
       }
+      /*
       int w = (ray_x+1)*(screen_width/2);
       int h = (ray_y+1)*(screen_height/2);
 
       if (hit==false){
-        fb->plotDepth(w,h,0);
+        //fb->plotDepth(w,h,0);
       } else {
+        //printf("closest plot: %f\n",closest_plot);
         fb->plotDepth(w,h,closest_plot);
       }
       //printf("triangle done");
+      */
     }
   }
 
