@@ -32,8 +32,8 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 64
-#define screen_height 64
+#define screen_width 256
+#define screen_height 256
 
 Vector getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 
   // for each section in the mapped size image
   for (float ray_x = -1.0; ray_x < 1.0; ray_x+=xInt){
-    for (float ray_y = -1.0; ray_x < 1.0; ray_y+=yInt){
+    for (float ray_y = -1.0; ray_y < 1.0; ray_y+=yInt){
       float ray_z = 1;
       float closest_plot = FLT_MAX;
 
@@ -92,6 +92,9 @@ int main(int argc, char *argv[])
 
         // if you multiply ray.direction by d, then you get the point on the plane
         float d = dir.dot(N)/ray.direction.dot(N);
+        if (d < 0){
+          continue;
+        }
 
         Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d,camera.z+ray.direction.z*d);
 
@@ -117,56 +120,12 @@ int main(int argc, char *argv[])
       }
 
       fb->plotDepth(xInt,yInt,closest_plot);
-      printf("triangle done");
+      //printf("triangle done");
 
     }
   }
 
-  printf("writing to file");
-
-  /* // each  verticy is a b c, make a plae, then find intersection from each plane
-  // for each triangle in traingale count
-
-
-
-  Sphere ball = Sphere(Vertex (5,5,5), 1);
-
-  // for each pixel in image
-  for (int wx = 0; wx < screen_width; wx+=1){
-    for (int wy = 0; wy < screen_height; wy+=1){
-      // generate a ray
-      Vertex p = Vertex(0,0,0);
-      int x = -1 + wx/1024;
-      int y = -1 + wy/1024;
-      int z = 1;
-      Vector d = Vector(x,y,z);
-      d.normalise();
-
-      Ray ray = Ray(p,d);
-      float t = 999999999.0;
-      Object closest = Object();
-
-      Hit touch = Hit();
-
-      ball.intersection(ray, touch);
-
-      // put loop for checking each triangle plane
-      float r = 0;
-      float g = 0;
-      float b = 0;
-
-      if (touch.t < t){
-        t = touch.t;
-        closest = ball;
-        r = 1;
-      }
-
-      //pos = ray.position(t);
-      //fb->plotPixel(wx,wy,r,g,b);
-      fb->plotDepth(wx,wy,t);
-
-    }
-  } */
+  //printf("writing to file");
 
   // Output the framebuffer.
   //fb->writeRGBFile((char *)"test.ppm");
