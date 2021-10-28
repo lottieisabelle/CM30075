@@ -143,7 +143,8 @@ int main(int argc, char *argv[])
           if(d < closest_plot){
             closest_plot = d;
 
-            printf("closest plot: %f\n",closest_plot);
+            
+            
           }
         }  
         int w = (ray_x+1)*(screen_width/2);
@@ -151,18 +152,16 @@ int main(int argc, char *argv[])
         fb->plotDepth(w,h,closest_plot);
 
       }
-      /*
+
       int w = (ray_x+1)*(screen_width/2);
       int h = (ray_y+1)*(screen_height/2);
 
-      if (hit==false){
-        //fb->plotDepth(w,h,0);
-      } else {
-        //printf("closest plot: %f\n",closest_plot);
+      if (closest_plot < 99999999){
         fb->plotDepth(w,h,closest_plot);
+      } else {
+        fb->plotDepth(w,h,0);
       }
-      //printf("triangle done");
-      */
+      
     }
   }
 
