@@ -32,8 +32,8 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 512
-#define screen_height 512
+#define screen_width 256
+#define screen_height 256
 
 Vector getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
@@ -45,8 +45,21 @@ int main(int argc, char *argv[])
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
 
+  /*// The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
+  Transform *transform = new Transform(
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, -1.0f, 
+    0.0f, 0.0f, 1.0f, 7.0f,
+    0.0f, 0.0f, 0.0f, 1.0f
+    );*/
+
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
-  Transform *transform = new Transform(1.0f, 0.0f, 0.0f, 0.0f,0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 7.0f,0.0f,0.0f,0.0f,1.0f);
+  Transform *transform = new Transform(
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, -1.0f, 0.0f, 
+    0.0f, 1.0f, 0.0f, 7.0f,
+    0.0f, 0.0f, 0.0f, 1.0f
+    );
 
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
@@ -61,9 +74,13 @@ int main(int argc, char *argv[])
   // for each section in the mapped size image
   for (float ray_x = -1.0; ray_x < 1.0; ray_x+=xInt){
     for (float ray_y = -1.0; ray_y < 1.0; ray_y+=yInt){
+      //printf("ray x: %f\n",ray_x);
+      //printf("ray_y: %f\n\n",ray_y);
+
       bool hit = false;
       float ray_z = 1;
-      float closest_plot = FLT_MAX;
+      float closest_plot = 99999999;
+      //printf("closest plot: %f\n",closest_plot);
 
       // for each triangle
       for(int i = 0; i < pm->triangle_count; i+=1){
@@ -76,6 +93,7 @@ int main(int argc, char *argv[])
         Vector ab = getDirection(a,b);
         Vector ac = getDirection(a,c);
         Vector bc = getDirection(b,c);
+        Vector ca = getDirection(c,a);
 
         // find the normal to the plane abc
         Vector N;
@@ -90,15 +108,19 @@ int main(int argc, char *argv[])
 
         // get direction vector between the camera (0,0,0) and point on plane e.g. a
         Vector dir = getDirection(camera,a);
+        //dir.normalise();
 
         // if you multiply ray.direction by d, then you get the point on the plane
         float d = dir.dot(N)/ray.direction.dot(N);
         if (d < 0){
           // not intersecting
           continue;
+        } else {
+          hit = true;
         }
-        hit = true;
-        Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d,camera.z+ray.direction.z*d);
+
+        // point on plane where shooting ray intersects
+        Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d, camera.z + ray.direction.z*d);
 
         // now need to know if the point P is inside the triangle on the plane
         // get vectors PA, PB and PC
@@ -108,23 +130,29 @@ int main(int argc, char *argv[])
 
         // calculate cross products to get normal at each vertex of triangle
         Vector a_normal;
-        ab.cross(PA,a_normal);
+        PA.cross(ab,a_normal);
         Vector b_normal;
-        bc.cross(PB,b_normal);
+        PB.cross(bc,b_normal);
         Vector c_normal;
-        ac.cross(PC,c_normal);
+        PC.cross(ca,c_normal);
 
         // if point is inside shape, all normals will be pointing in the same direction
         // if dot product between 2 vectors is greater than zero, they are pointing in the same direction
-        if (a_normal.dot(b_normal) > 0 && b_normal.dot(c_normal) > 0){
-          closest_plot = d;
+
+        if ((a_normal.dot(b_normal) > 0) && (b_normal.dot(c_normal) > 0)){
+          if(d < closest_plot){
+            closest_plot = d;
+            //printf("closest plot: %f\n",closest_plot);
+          }
         }   
       }
+      int w = (ray_x+1)*(screen_width/2);
+      int h = (ray_y+1)*(screen_height/2);
 
       if (hit==false){
-        fb->plotDepth(xInt,yInt,0);
+        fb->plotDepth(w,h,0);
       } else {
-        fb->plotDepth(xInt,yInt,closest_plot);
+        fb->plotDepth(w,h,closest_plot);
       }
       //printf("triangle done");
     }

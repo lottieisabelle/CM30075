@@ -114,7 +114,9 @@ void PolyMesh::do_construct(char *file, Transform *transform)
         if(axis_count != 0){
 
           int number = std::stoi(index_value);
-          number -= 1;
+          // for smaller teapot take out minus 1
+          //number -= 1;
+          
           PolyMesh::triangle[i][axis_count-1] = number;
         }
         axis_count++;
