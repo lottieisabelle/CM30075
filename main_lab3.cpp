@@ -11,7 +11,7 @@
  *
  * On linux.bath.ac.uk:
  *
- * Compile the code using g++ -o lab3executable main_lab3.cpp framebuffer.cpp linedrawer.cpp polymesh.cpp sphere.cpp -lm
+ * Compile the code using g++ -o lab3executable main_lab3.cpp framebuffer.cpp polymesh.cpp -lm
  *
  * Execute the code using ./lab3executable
  *
@@ -32,8 +32,8 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 256
-#define screen_height 256
+#define screen_width 2048
+#define screen_height 2048
 
 Vector getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
 
-  /*// The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
+  /* original transformation matrix
   Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, -1.0f, 
@@ -56,14 +56,13 @@ int main(int argc, char *argv[])
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
   Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, -1.0f, 0.0f, 
+    0.0f, 0.0f, -1.0f, 3.0f, 
     0.0f, 1.0f, 0.0f, 7.0f,
     0.0f, 0.0f, 0.0f, 1.0f
     );
 
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
-
 
   Vertex camera (0,0,0);
 
@@ -102,7 +101,7 @@ int main(int argc, char *argv[])
         N.normalise();
 
         // generate the shooting ray
-        Vector D (ray_x,ray_y,ray_z);
+        Vector D (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222);
         Ray ray (camera, D);
         ray.direction.normalise();
 
@@ -142,14 +141,13 @@ int main(int argc, char *argv[])
         if ((a_normal.dot(b_normal) > 0) && (b_normal.dot(c_normal) > 0)){
           if(d < closest_plot){
             closest_plot = d;
-
-            
-            
           }
         }  
+        /*
         int w = (ray_x+1)*(screen_width/2);
         int h = (ray_y+1)*(screen_height/2);
         fb->plotDepth(w,h,closest_plot);
+        */
 
       }
 
