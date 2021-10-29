@@ -73,13 +73,10 @@ int main(int argc, char *argv[])
   // for each section in the mapped size image
   for (float ray_x = -1.0; ray_x < 1.0; ray_x+=xInt){
     for (float ray_y = -1.0; ray_y < 1.0; ray_y+=yInt){
-      //printf("ray x: %f\n",ray_x);
-      //printf("ray_y: %f\n\n",ray_y);
 
       bool hit = false;
       float ray_z = 1;
       float closest_plot = 99999999;
-      //printf("closest plot: %f\n",closest_plot);
 
       // for each triangle
       for(int i = 0; i < pm->triangle_count; i+=1){
@@ -107,7 +104,6 @@ int main(int argc, char *argv[])
 
         // get direction vector between the camera (0,0,0) and point on plane e.g. a
         Vector dir = getDirection(camera,a);
-        //dir.normalise();
 
         // if you multiply ray.direction by d, then you get the point on the plane
         float d = dir.dot(N)/ray.direction.dot(N);
@@ -143,11 +139,6 @@ int main(int argc, char *argv[])
             closest_plot = d;
           }
         }  
-        /*
-        int w = (ray_x+1)*(screen_width/2);
-        int h = (ray_y+1)*(screen_height/2);
-        fb->plotDepth(w,h,closest_plot);
-        */
 
       }
 
@@ -163,12 +154,8 @@ int main(int argc, char *argv[])
     }
   }
 
-  //printf("writing to file");
-
   // Output the framebuffer.
-  //fb->writeRGBFile((char *)"test.ppm");
   fb->writeDepthFile((char *)"test.ppm");
-
 
   return 0;
   
