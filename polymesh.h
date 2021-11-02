@@ -24,7 +24,7 @@ public:
 
 	void do_construct(char *file, Transform *transform);
 
-	void intersection(Ray ray, Hit &hit, Vertex camera);
+	void intersection(Ray ray, Hit &hit);
 	
 	PolyMesh(char *file);
 	PolyMesh(char *file, Transform *transform);
