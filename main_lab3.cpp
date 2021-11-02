@@ -32,8 +32,8 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 2048
-#define screen_height 2048
+#define screen_width 212
+#define screen_height 212
 
 Vector getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
@@ -73,10 +73,16 @@ int main(int argc, char *argv[])
   // for each section in the mapped size image
   for (float ray_x = -1.0; ray_x < 1.0; ray_x+=xInt){
     for (float ray_y = -1.0; ray_y < 1.0; ray_y+=yInt){
+      
+      Hit hit;
+      hit.flag = false;
 
-      bool hit = false;
       float ray_z = 1;
       float closest_plot = 99999999;
+
+      // generate the shooting ray
+      Ray ray (camera, Vector (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222));
+      ray.direction.normalise();
 
       // for each triangle
       for(int i = 0; i < pm->triangle_count; i+=1){
@@ -97,10 +103,9 @@ int main(int argc, char *argv[])
         ab.cross(ac,N);
         N.normalise();
 
-        // generate the shooting ray
-        Vector D (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222);
-        Ray ray (camera, D);
-        ray.direction.normalise();
+        if(ray.direction.dot(N) == 0){
+          continue;
+        }
 
         // get direction vector between the camera (0,0,0) and point on plane e.g. a
         Vector dir = getDirection(camera,a);
@@ -110,9 +115,7 @@ int main(int argc, char *argv[])
         if (d < 0){
           // not intersecting
           continue;
-        } else {
-          hit = true;
-        }
+        } 
 
         // point on plane where shooting ray intersects
         Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d, camera.z + ray.direction.z*d);
@@ -137,6 +140,7 @@ int main(int argc, char *argv[])
         if ((a_normal.dot(b_normal) > 0) && (b_normal.dot(c_normal) > 0)){
           if(d < closest_plot){
             closest_plot = d;
+            hit.flag = true;
           }
         }  
 
@@ -145,7 +149,7 @@ int main(int argc, char *argv[])
       int w = (ray_x+1)*(screen_width/2);
       int h = (ray_y+1)*(screen_height/2);
 
-      if (closest_plot < 99999999){
+      if (hit.flag==true){
         fb->plotDepth(w,h,closest_plot);
       } else {
         fb->plotDepth(w,h,0);
