@@ -10,6 +10,9 @@
 #include "vertex.h"
 #include "transform.h"
 
+#include "ray.h"
+#include "hit.h"
+
 typedef int TriangleIndex[3];
 
 class PolyMesh {
@@ -20,6 +23,8 @@ public:
 	TriangleIndex *triangle;
 
 	void do_construct(char *file, Transform *transform);
+
+	void intersection(Ray ray, Hit &hit, Vertex camera);
 	
 	PolyMesh(char *file);
 	PolyMesh(char *file, Transform *transform);

@@ -35,9 +35,7 @@
 #define screen_width 212
 #define screen_height 212
 
-Vector getDirection(Vertex a, Vertex b){
-  return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
-}
+
 
 int main(int argc, char *argv[])
 {
@@ -76,81 +74,20 @@ int main(int argc, char *argv[])
       
       Hit hit;
       hit.flag = false;
-
+      hit.t = 99999999;
       float ray_z = 1;
-      float closest_plot = 99999999;
-
+      
       // generate the shooting ray
       Ray ray (camera, Vector (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222));
       ray.direction.normalise();
 
-      // for each triangle
-      for(int i = 0; i < pm->triangle_count; i+=1){
-        // get the vertex data
-        Vertex a = pm->vertex[pm->triangle[i][0]];
-        Vertex b = pm->vertex[pm->triangle[i][1]];
-        Vertex c = pm->vertex[pm->triangle[i][2]];
-
-        // create vectors
-        Vector ab = getDirection(a,b);
-        Vector ac = getDirection(a,c);
-        Vector bc = getDirection(b,c);
-        Vector ca = getDirection(c,a);
-
-        // find the normal to the plane abc
-        Vector N;
-        // get cross product of ab and ac and store in n
-        ab.cross(ac,N);
-        N.normalise();
-
-        if(ray.direction.dot(N) == 0){
-          continue;
-        }
-
-        // get direction vector between the camera (0,0,0) and point on plane e.g. a
-        Vector dir = getDirection(camera,a);
-
-        // if you multiply ray.direction by d, then you get the point on the plane
-        float d = dir.dot(N)/ray.direction.dot(N);
-        if (d < 0){
-          // not intersecting
-          continue;
-        } 
-
-        // point on plane where shooting ray intersects
-        Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d, camera.z + ray.direction.z*d);
-
-        // now need to know if the point P is inside the triangle on the plane
-        // get vectors PA, PB and PC
-        Vector PA = getDirection(P,a);
-        Vector PB = getDirection(P,b);
-        Vector PC = getDirection(P,c);
-
-        // calculate cross products to get normal at each vertex of triangle
-        Vector a_normal;
-        PA.cross(ab,a_normal);
-        Vector b_normal;
-        PB.cross(bc,b_normal);
-        Vector c_normal;
-        PC.cross(ca,c_normal);
-
-        // if point is inside shape, all normals will be pointing in the same direction
-        // if dot product between 2 vectors is greater than zero, they are pointing in the same direction
-
-        if ((a_normal.dot(b_normal) > 0) && (b_normal.dot(c_normal) > 0)){
-          if(d < closest_plot){
-            closest_plot = d;
-            hit.flag = true;
-          }
-        }  
-
-      }
-
+      pm->intersection(ray, hit, camera);
+      
       int w = (ray_x+1)*(screen_width/2);
       int h = (ray_y+1)*(screen_height/2);
 
       if (hit.flag==true){
-        fb->plotDepth(w,h,closest_plot);
+        fb->plotDepth(w,h,hit.t);
       } else {
         fb->plotDepth(w,h,0);
       }
