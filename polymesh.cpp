@@ -132,7 +132,7 @@ Vector getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
 }
 
-void PolyMesh::intersection(Ray ray, Hit &hit, Vertex camera)
+void PolyMesh::intersection(Ray ray, Hit &hit)
 {
   // for each triangle
   for(int i = 0; i < this->triangle_count; i+=1){
@@ -158,7 +158,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit, Vertex camera)
     }
 
     // get direction vector between the camera (0,0,0) and point on plane e.g. a
-    Vector dir = getDirection(camera,a);
+    Vector dir = getDirection(ray.position,a);
 
     // if you multiply ray.direction by d, then you get the point on the plane
     float d = dir.dot(N)/ray.direction.dot(N);
@@ -168,7 +168,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit, Vertex camera)
     } 
 
     // point on plane where shooting ray intersects
-    Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d, camera.z + ray.direction.z*d);
+    Vertex P (ray.position.x + ray.direction.x*d, ray.position.y + ray.direction.y*d, ray.position.z + ray.direction.z*d);
 
     // now need to know if the point P is inside the triangle on the plane
     // get vectors PA, PB and PC
