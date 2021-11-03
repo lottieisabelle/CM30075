@@ -45,7 +45,6 @@ PolyMesh::PolyMesh(char *file)
 PolyMesh::PolyMesh(char *file, Transform *transform)
 {
   this->do_construct(file, transform);
-
 }
 
 void PolyMesh::do_construct(char *file, Transform *transform)
@@ -196,4 +195,9 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
 
   }
 
+}
+
+void PolyMesh::ambientLight(float lightIntensity)
+{
+  
 }
