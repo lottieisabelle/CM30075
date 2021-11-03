@@ -10,5 +10,5 @@ public:
     float green;
     float blue;
 
-    void calcAmbient();
+    float* colour_hit(Hit &hit);
 };

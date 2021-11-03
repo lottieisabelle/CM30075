@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include "polymesh.h"
+//#include "lighting.h"
 
 using namespace std;
 
@@ -190,6 +191,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
       if(d < hit.t){
         hit.t = d;
         hit.flag = true;
+        hit.normal = N;
       }
     }  
 
@@ -197,7 +199,19 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
 
 }
 
-void PolyMesh::ambientLight(float lightIntensity)
+float* PolyMesh::colour_hit(Hit &hit)
 {
   
+  float red = 0.5 * (hit.normal.x+1);
+  float green = 0.5 * (hit.normal.y+1);
+  float blue = 0.5 * (hit.normal.z+1);
+
+  printf("red %f:", red);
+  printf("green %f:", green);
+  printf("blue %f:", blue);
+  printf("\n\n");
+
+  static float colour [3] = {red,green,blue};
+
+  return colour;
 }

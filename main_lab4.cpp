@@ -78,18 +78,20 @@ int main(int argc, char *argv[])
 
       pm->intersection(ray, hit);
 
-      float lightIntensity = 1.0f;
-      // calculate lighting on objects here before writing to file
-      pm->ambientLight(lightIntensity);
+      
       
       int w = (ray_x+1)*(screen_width/2);
       int h = (ray_y+1)*(screen_height/2);
 
       if (hit.flag==true){
         fb->plotDepth(w,h,hit.t);
-        fb->plotPixel(w,h,0.2,0.1,0.4);
+        // calculate colour on object based on normal
+        float* colour;
+        colour = pm->colour_hit(hit);
+        fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       } else {
         fb->plotDepth(w,h,0);
+        fb->plotPixel(w,h,0,0,0);
       }
       
     }
