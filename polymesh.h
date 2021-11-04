@@ -30,6 +30,8 @@ public:
 	void intersection(Ray ray, Hit &hit);
 
 	float* colour_hit(Hit &hit);
+
+	float* colour_no_hit(Ray ray);
 	
 	PolyMesh(char *file);
 	PolyMesh(char *file, Transform *transform);

@@ -204,14 +204,35 @@ float* PolyMesh::colour_hit(Hit &hit)
   
   float red = 0.5 * (hit.normal.x+1);
   float green = 0.5 * (hit.normal.y+1);
-  float blue = 0.5 * (hit.normal.z+1);
+  float blue = 0.5 * (-hit.normal.z+1);
 
-  printf("red %f:", red);
-  printf("green %f:", green);
-  printf("blue %f:", blue);
-  printf("\n\n");
+  //printf("red: %f", red);
+  //printf(" green: %f", green);
+  //printf(" blue: %f", blue);
 
-  static float colour [3] = {red,green,blue};
+  float* colour {new float[3] {red,green,blue}};
+
+  return colour;
+}
+
+float* PolyMesh::colour_no_hit(Ray ray)
+{
+  // based on y direction of ray
+  // function takes ray not hit
+  // create value called t which is the 0.5 * (ray.direction.y + 1)
+  // for each colour
+  // colour is then (1- t) * (colour values of white) + t * (colour values of the other colour in the gradient)
+  float t = 0.5 * (ray.direction.y-0.00222 +1);
+
+  float red = (1-t) * 1 + t * 0.5;
+  float green = (1-t) * 1 + t * 0.7;
+  float blue = (1-t) * 1 + t * 1.0;
+
+  //printf("red: %f", red);
+  //printf(" green: %f", green);
+  //printf(" blue: %f", blue);
+
+  float* colour {new float[3] {red,green,blue}};
 
   return colour;
 }

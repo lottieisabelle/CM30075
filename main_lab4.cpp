@@ -40,21 +40,31 @@ int main(int argc, char *argv[])
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
 
-  /* original transformation matrix
+  // original transformation matrix
+  /*Transform *transform = new Transform(
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, 
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f
+    );*/
+
+  // original transformation matrix
   Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, -1.0f, 
     0.0f, 0.0f, 1.0f, 7.0f,
     0.0f, 0.0f, 0.0f, 1.0f
-    );*/
+    );
+
+    // new matrix from soren in discord
 
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
-  Transform *transform = new Transform(
+  /*Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, -1.0f, 3.0f, 
     0.0f, 1.0f, 0.0f, 7.0f,
     0.0f, 0.0f, 0.0f, 1.0f
-    );
+    );*/
 
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
@@ -78,22 +88,24 @@ int main(int argc, char *argv[])
 
       pm->intersection(ray, hit);
 
-      
-      
       int w = (ray_x+1)*(screen_width/2);
-      int h = (ray_y+1)*(screen_height/2);
+      int h = screen_height-1-(ray_y+1)*(screen_height/2);
 
       if (hit.flag==true){
         fb->plotDepth(w,h,hit.t);
         // calculate colour on object based on normal
-        float* colour;
-        colour = pm->colour_hit(hit);
+        float* colour = pm->colour_hit(hit);
+        //printf("red: %f", colour[0]);
+        //printf(" green: %f", colour[1]);
+        //printf(" blue: %f", colour[2]);
+        //printf("\n\n");
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       } else {
         fb->plotDepth(w,h,0);
-        fb->plotPixel(w,h,0,0,0);
+        float* colour = pm->colour_no_hit(ray);
+        fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       }
-      
+
     }
   }
 
