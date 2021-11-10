@@ -12,7 +12,6 @@
 #include <sstream>
 
 #include "polymesh.h"
-#include "lighting.h"
 
 using namespace std;
 

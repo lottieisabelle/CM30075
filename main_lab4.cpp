@@ -27,13 +27,14 @@
 #include "polymesh.h"
 #include "ray.h"
 #include "sphere.h"
+#include "lighting.h"
 
 #include <iostream>
 #include <math.h>
 #include <float.h>
 
-#define screen_width 212
-#define screen_height 212
+#define screen_width 64
+#define screen_height 64
 
 int main(int argc, char *argv[])
 {
