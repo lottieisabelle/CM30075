@@ -40,7 +40,7 @@ public:
 
 	float* calculate_lighting(Hit &hit, Lighting light);
 
-	void set_coeffs(float r, float g, float b);
+	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb);
 	
 	PolyMesh(char *file);
 	PolyMesh(char *file, Transform *transform);

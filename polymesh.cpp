@@ -266,22 +266,22 @@ float* PolyMesh::calculate_lighting(Hit &hit, Lighting light)
   return colour;
 }
 
-void PolyMesh::set_coeffs(float r, float g, float b)
+void PolyMesh::set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb)
 {
   PolyMesh::ambient = new float[3];
   PolyMesh::diffuse = new float[3];
   PolyMesh::specular = new float[3];
 
-  ambient[0] = 0.0;
-  ambient[1] = 0.8;
-  ambient[2] = 0.8; 
+  ambient[0] = ar;
+  ambient[1] = ag;
+  ambient[2] = ab; 
 
-  diffuse[0] = 0;
-  diffuse[1] = 0.8;
-  diffuse[2] = 0.8;
+  diffuse[0] = dr;
+  diffuse[1] = dg;
+  diffuse[2] = db;
 
-  specular[0] = 0.4;
-  specular[1] = 0.4;
-  specular[2] = 0.4; 
+  specular[0] = sr;
+  specular[1] = sg;
+  specular[2] = sb; 
 
 }

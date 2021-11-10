@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
 
   // set surface coefficients for lighting for each colour
-  pm->set_coeffs(0,0.8,0.8);
+  pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);
 
   // create light - set ambient light intensity and diffuse intensity of light
   Lighting light (0.5,0.8, Vertex (-2,-1,1));
