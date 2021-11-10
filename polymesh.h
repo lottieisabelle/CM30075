@@ -39,6 +39,8 @@ public:
 	float* colour_no_hit(Ray ray);
 
 	float* calculate_lighting(Hit &hit, Lighting light);
+
+	void set_coeffs(float r, float g, float b);
 	
 	PolyMesh(char *file);
 	PolyMesh(char *file, Transform *transform);

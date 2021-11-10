@@ -29,11 +29,12 @@
 #include "sphere.h"
 
 #include <iostream>
+#include <sstream>
 #include <math.h>
 #include <float.h>
 
-#define screen_width 64
-#define screen_height 64
+#define screen_width 150
+#define screen_height 150
 
 int main(int argc, char *argv[])
 {
@@ -49,42 +50,51 @@ int main(int argc, char *argv[])
     );*/
 
   // original transformation matrix
-  Transform *transform = new Transform(
+  /*Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, -1.0f, 
     0.0f, 0.0f, 1.0f, 7.0f,
     0.0f, 0.0f, 0.0f, 1.0f
-    );
+    );*/
 
-    // new matrix from soren in discord
+  // new matrix from soren in discord
+  // [[1, 0, 0, 0], [0, -0.00000004371139, -1, 0], [0, 1, -0.00000004371139, 0], [0, -1.5, 7, 1]]
+  /*Transform *transform = new Transform(
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, -0.00000004371139f, -1.0f, 0.0f, 
+    0.0f, 1.0f, -0.00000004371139f, 0.0f,
+    0.0f, -1.5f, 7.0f, 1.0f
+    );*/
 
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
-  /*Transform *transform = new Transform(
+  Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, -1.0f, 3.0f, 
     0.0f, 1.0f, 0.0f, 7.0f,
     0.0f, 0.0f, 0.0f, 1.0f
-    );*/
+    );
 
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
 
   // set surface coefficients for lighting for each colour
-  pm->ambient[0] = 0;
-  pm->ambient[1] = 0.8;
-  pm->ambient[2] = 0.8; // turqoise
+  pm->set_coeffs(0,0.8,0.8);
+  /*
+  printf("ambient red: %f \n",pm->ambient[0]);
+  printf("ambient g: %f \n",pm->ambient[1]);
+  printf("ambient b: %f \n",pm->ambient[2]);
 
-  pm->diffuse[0] = 0;
-  pm->diffuse[1] = 0.8;
-  pm->diffuse[2] = 0.8; // turqoise
+  printf("diffuse red: %f \n",pm->diffuse[0]);
+  printf("diffuse g: %f \n",pm->diffuse[1]);
+  printf("diffuse b: %f \n",pm->diffuse[2]);
 
-  pm->specular[0] = 0;
-  pm->specular[1] = 0.8;
-  pm->specular[2] = 0.8; // turqoise
-  
+  printf("specular red: %f \n",pm->specular[0]);
+  printf("specular g: %f \n",pm->specular[1]);
+  printf("specular b: %f \n",pm->specular[2]);
+  */
 
   // create light - set ambient light intensity and diffuse intensity of light
-  Lighting light (0.5,0.8, Vertex (0,5,0));
+  Lighting light (0.5,0.8, Vertex (-2,-1,1));
 
   // map each pixel to a value between -1 and 1
   float xInt = 2.0f/(float) screen_width;
@@ -104,31 +114,35 @@ int main(int argc, char *argv[])
       ray.direction.normalise();
 
       pm->intersection(ray, hit);
-
+      
       int w = (ray_x+1)*(screen_width/2);
-      int h = screen_height-1-(ray_y+1)*(screen_height/2);
-
+      //int h = screen_height-1-(ray_y+1)*(screen_height/2);
+      int h = (ray_y+1)*(screen_height/2);
       if (hit.flag==true){
 
         // TODO calculate lighting here ?
         float* colour = pm->calculate_lighting(hit, light);
-
+        //printf("DEBUG1");
 
         fb->plotDepth(w,h,hit.t);
         // calculate colour on object based on normal
         //float* colour = pm->colour_hit(hit);
 
         // TODO : remove print statements
-        //printf("red: %f", colour[0]);
-        //printf(" green: %f", colour[1]);
-        //printf(" blue: %f", colour[2]);
-        //printf("\n\n");
+        /*
+        printf("red: %f", colour[0]);
+        printf(" green: %f", colour[1]);
+        printf(" blue: %f", colour[2]);
+        printf("\n\n");*/
+
+
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       } else {
         fb->plotDepth(w,h,0);
-        //float* colour = pm->colour_no_hit(ray);
+        float* colour = pm->colour_no_hit(ray);
+        //printf("DEBUG2");
 
-        float* colour = pm->calculate_lighting(hit, light);
+        //float* colour = pm->calculate_lighting(hit, light);
 
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       }

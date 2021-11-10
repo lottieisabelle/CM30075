@@ -240,18 +240,48 @@ float* PolyMesh::colour_no_hit(Ray ray)
 float* PolyMesh::calculate_lighting(Hit &hit, Lighting light)
 {
   Vector L = getDirection(hit.position, light.position);
+  L.normalise();
   Vector I = getDirection(light.position, hit.position);
+  I.normalise();
   Vector R;
   hit.normal.reflection(I,R);
+  R.normalise();
   Vector V = getDirection(hit.position, Vertex (0,0,0));
+  V.normalise();
 
-  int n = 100;
+  int n = 40;
 
   float red = light.ambient_intensity*ambient[0] + light.diffuse_intensity *  ( diffuse[0]*(hit.normal.dot(L))  +  specular[0]*  pow(R.dot(V),n));
   float green = light.ambient_intensity*ambient[1] + light.diffuse_intensity *  ( diffuse[1]*(hit.normal.dot(L))  +  specular[1]*  pow(R.dot(V),n));
   float blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
 
+  /*
+  printf("red: %f", red);
+  printf(" green: %f", green);
+  printf(" blue: %f", blue);
+  printf("\n\n");*/
+
   float* colour {new float[3] {red,green,blue}};
 
   return colour;
+}
+
+void PolyMesh::set_coeffs(float r, float g, float b)
+{
+  PolyMesh::ambient = new float[3];
+  PolyMesh::diffuse = new float[3];
+  PolyMesh::specular = new float[3];
+
+  ambient[0] = 0.0;
+  ambient[1] = 0.8;
+  ambient[2] = 0.8; 
+
+  diffuse[0] = 0;
+  diffuse[1] = 0.8;
+  diffuse[2] = 0.8;
+
+  specular[0] = 0.4;
+  specular[1] = 0.4;
+  specular[2] = 0.4; 
+
 }
