@@ -33,11 +33,12 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 150
-#define screen_height 150
+#define screen_width 1500
+#define screen_height 1500
 
 int main(int argc, char *argv[])
 {
+  printf("hello\n");
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
 
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
 
   // set surface coefficients for lighting for each colour
-  pm->set_coeffs(0,0.8,0.8);
+  pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);
 
   // create light - set ambient light intensity and diffuse intensity of light
   Lighting light (0.5,0.8, Vertex (-2,-1,1));
@@ -91,48 +92,78 @@ int main(int argc, char *argv[])
   for (float ray_x = -1.0; ray_x < 1.0; ray_x+=xInt){
     for (float ray_y = -1.0; ray_y < 1.0; ray_y+=yInt){
       
-      Hit hit;
-      hit.flag = false;
-      hit.t = 99999999;
+      Hit shooting_hit;
+      shooting_hit.flag = false;
+      shooting_hit.t = 99999999;
       float ray_z = 1;
       
       // generate the shooting ray
-      Ray ray (Vertex (0,0,0), Vector (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222));
-      ray.direction.normalise();
+      Ray shooting_ray (Vertex (0,0,0), Vector (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222));
+      shooting_ray.direction.normalise();
+      pm->intersection(shooting_ray, shooting_hit, 1);
 
-      pm->intersection(ray, hit);
-      
+      // calculate shadows here
+      // create shadow data storage
+      Hit shadow_hit;
+      shadow_hit.flag = false;
+      shadow_hit.t = 99999999;
+      Vertex shadow_point = Vertex (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222);
+      Vector shadow_dir = pm->getDirection(shadow_point, light.position);
+      Ray shadow_ray (shadow_point, shadow_dir);
+
+      pm->intersection(shadow_ray, shadow_hit, 2);
+      if(shadow_hit.flag ==true){
+        //printf("true");
+      }
+
       int w = (ray_x+1)*(screen_width/2);
-      //int h = screen_height-1-(ray_y+1)*(screen_height/2);
       int h = (ray_y+1)*(screen_height/2);
-      if (hit.flag==true){
+      // TODO : reverse y direction?
+      //int h = screen_height-1-(ray_y+1)*(screen_height/2);
 
-        // TODO calculate lighting here ?
-        float* colour = pm->calculate_lighting(hit, light);
-        //printf("DEBUG1");
+      float* colour;
+      // calculate lighting
+      if (shooting_hit.flag==true){
+        fb->plotDepth(w,h,shooting_hit.t);
 
-        fb->plotDepth(w,h,hit.t);
+        // calculate lighting here
+        float* colour = pm->calculate_lighting(shooting_hit, light);
+        
         // calculate colour on object based on normal
         //float* colour = pm->colour_hit(hit);
-
-        // TODO : remove print statements
-        /*
-        printf("red: %f", colour[0]);
-        printf(" green: %f", colour[1]);
-        printf(" blue: %f", colour[2]);
-        printf("\n\n");*/
-
 
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       } else {
         fb->plotDepth(w,h,0);
-        float* colour = pm->colour_no_hit(ray);
-        //printf("DEBUG2");
+        float* colour = pm->colour_no_hit(shooting_ray);
+        
 
         //float* colour = pm->calculate_lighting(hit, light);
 
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       }
+      
+      // calculate shadows
+      if (shadow_hit.flag==true){
+        //printf("true\n");
+        float* colour = pm->calculate_lighting(shooting_hit, light);
+        //printf("colour: %f, %f, %f\n", colour[0],colour[1],colour[2]);
+        // reduce all colour values by 0.6, set to 0 if below 0
+        float temp;
+        for (int i = 1; i < 3; i++){
+          temp = colour[i];
+          temp = temp - 0.5;
+          if(temp<0){
+            temp = 0;
+          }
+          colour[i] = temp;
+        }
+        //printf("shadow colour: %.4f, %.4f, %.4f\n", colour[0],colour[1],colour[2]);
+        fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
+      }
+      
+      
+
 
     }
   }

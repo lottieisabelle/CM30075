@@ -32,7 +32,9 @@ public:
 
 	void do_construct(char *file, Transform *transform);
 
-	void intersection(Ray ray, Hit &hit);
+	Vector getDirection(Vertex a, Vertex b);
+
+	void intersection(Ray ray, Hit &hit, int x);
 
 	float* colour_hit(Hit &hit);
 

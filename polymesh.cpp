@@ -127,11 +127,11 @@ void PolyMesh::do_construct(char *file, Transform *transform)
   f_reader.close();
 }
 
-Vector getDirection(Vertex a, Vertex b){
+Vector PolyMesh::getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
 }
 
-void PolyMesh::intersection(Ray ray, Hit &hit)
+void PolyMesh::intersection(Ray ray, Hit &hit, int x)
 {
   // for each triangle
   for(int i = 0; i < this->triangle_count; i+=1){
@@ -155,17 +155,25 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
     if(ray.direction.dot(N) == 0){
       continue;
     }
+    
 
     // get direction vector between the camera (0,0,0) and point on plane e.g. a
     Vector dir = getDirection(ray.position,a);
 
-    // if you multiply ray.direction by d, then you get the point on the plane
     float d = dir.dot(N)/ray.direction.dot(N);
+    
     if (d < 0){
       // not intersecting
+      if(x == 2){
+        //printf("7777 ");
+      }
       continue;
     } 
-
+    if(x == 2){
+      //printf("test ");
+    }
+  
+    // if you multiply ray.direction by d, then you get the point on the plane
     // point on plane where shooting ray intersects
     Vertex P (ray.position.x + ray.direction.x*d, ray.position.y + ray.direction.y*d, ray.position.z + ray.direction.z*d);
 
@@ -185,9 +193,29 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
 
     // if point is inside shape, all normals will be pointing in the same direction
     // if dot product between 2 vectors is greater than zero, they are pointing in the same direction
+    //if(x == 2){
+      //printf("a normal dot b normal: %.4f \n", a_normal.dot(b_normal));
+      //printf("b_normal.dot(c_normal): %.4f \n", b_normal.dot(c_normal));
+      //printf("\n\n");
+    //}
+    if(x == 2){
+      if ((a_normal.dot(b_normal) < 0) && (b_normal.dot(c_normal) < 0)){
+        hit.flag = true;
+        //printf("\n\n\n yes \n\n\n");
+      }
+    }
 
     if ((a_normal.dot(b_normal) > 0) && (b_normal.dot(c_normal) > 0)){
+      // 16:04 : shadow intersection doesn't get to here
+      if(x == 2){
+        //printf("\n\n\n yes \n\n\n");
+        //printf("a normal dot b normal: %.4f \n", a_normal.dot(b_normal));
+        //printf("b_normal.dot(c_normal): %.4f \n", b_normal.dot(c_normal));
+      }
+
       if(d < hit.t){
+        
+        
         hit.t = d;
         hit.flag = true;
         hit.normal = N;
