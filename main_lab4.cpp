@@ -74,6 +74,9 @@ int main(int argc, char *argv[])
   pm->specular = 0.5;
   pm->ambient = 0.5;
 
+  // create light - set ambient light intensity and diffuse intensity of light
+  Lighting *light = new Lighting(0.5,0.5);
+
   // map each pixel to a value between -1 and 1
   float xInt = 2.0f/(float) screen_width;
   float yInt = 2.0f/(float) screen_height;

@@ -23,7 +23,7 @@ public:
 	int triangle_count;
     Vertex *vertex;
 	TriangleIndex *triangle;
-	Lighting surface;
+	//Lighting light;
 
 	// coefficients
     float ambient;
