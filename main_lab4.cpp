@@ -69,6 +69,11 @@ int main(int argc, char *argv[])
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
 
+  // set surface coefficients for lighting
+  pm->diffuse = 0.5;
+  pm->specular = 0.5;
+  pm->ambient = 0.5;
+
   // map each pixel to a value between -1 and 1
   float xInt = 2.0f/(float) screen_width;
   float yInt = 2.0f/(float) screen_height;

@@ -13,7 +13,7 @@
 #include "ray.h"
 #include "hit.h"
 
-//#include "lighting.h"
+#include "lighting.h"
 
 typedef int TriangleIndex[3];
 
@@ -23,7 +23,12 @@ public:
 	int triangle_count;
     Vertex *vertex;
 	TriangleIndex *triangle;
-	//Lighting surface;
+	Lighting surface;
+
+	// coefficients
+    float ambient;
+    float specular;
+    float diffuse;
 
 	void do_construct(char *file, Transform *transform);
 
