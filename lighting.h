@@ -23,10 +23,11 @@ public:
         diffuse_intensity = 0.5;
     }
 
-    Lighting(float Ia, float Ii)
+    Lighting(float Ia, float Ii, Vertex set_position)
     {
         ambient_intensity = Ia;
         diffuse_intensity = Ii;
+        position = set_position;
     }
 
     void get_direction();

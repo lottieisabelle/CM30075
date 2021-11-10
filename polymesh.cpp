@@ -192,6 +192,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
         hit.t = d;
         hit.flag = true;
         hit.normal = N;
+        hit.position = P;
       }
     }  
 
@@ -231,6 +232,25 @@ float* PolyMesh::colour_no_hit(Ray ray)
   //printf("red: %f", red);
   //printf(" green: %f", green);
   //printf(" blue: %f", blue);
+
+  float* colour {new float[3] {red,green,blue}};
+
+  return colour;
+}
+
+float* PolyMesh::calculate_lighting(Hit &hit, Lighting light)
+{
+  Vector L = getDirection(hit.position, light.position);
+  Vector I = getDirection(light.position, hit.position);
+  Vector R;
+  hit.normal.reflection(I,R);
+  Vector V = getDirection(hit.position, Vertex (0,0,0));
+
+  int n = 100;
+
+  float red = light.ambient_intensity*ambient[0] + light.diffuse_intensity *  ( diffuse[0]*(hit.normal.dot(L))  +  specular[0]*  pow(R.dot(V),n));
+  float green = light.ambient_intensity*ambient[1] + light.diffuse_intensity *  ( diffuse[1]*(hit.normal.dot(L))  +  specular[1]*  pow(R.dot(V),n));
+  float blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
 
   float* colour {new float[3] {red,green,blue}};
 

@@ -9,6 +9,7 @@
 
 #include "vertex.h"
 #include "transform.h"
+#include <math.h>
 
 #include "ray.h"
 #include "hit.h"
@@ -23,12 +24,11 @@ public:
 	int triangle_count;
     Vertex *vertex;
 	TriangleIndex *triangle;
-	//Lighting light;
 
 	// coefficients
-    float ambient;
-    float specular;
-    float diffuse;
+	float *ambient;
+    float *diffuse;
+	float *specular;
 
 	void do_construct(char *file, Transform *transform);
 
@@ -37,6 +37,8 @@ public:
 	float* colour_hit(Hit &hit);
 
 	float* colour_no_hit(Ray ray);
+
+	float* calculate_lighting(Hit &hit, Lighting light);
 	
 	PolyMesh(char *file);
 	PolyMesh(char *file, Transform *transform);

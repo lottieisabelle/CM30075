@@ -69,13 +69,22 @@ int main(int argc, char *argv[])
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
 
-  // set surface coefficients for lighting
-  pm->diffuse = 0.5;
-  pm->specular = 0.5;
-  pm->ambient = 0.5;
+  // set surface coefficients for lighting for each colour
+  pm->ambient[0] = 0;
+  pm->ambient[1] = 0.8;
+  pm->ambient[2] = 0.8; // turqoise
+
+  pm->diffuse[0] = 0;
+  pm->diffuse[1] = 0.8;
+  pm->diffuse[2] = 0.8; // turqoise
+
+  pm->specular[0] = 0;
+  pm->specular[1] = 0.8;
+  pm->specular[2] = 0.8; // turqoise
+  
 
   // create light - set ambient light intensity and diffuse intensity of light
-  Lighting *light = new Lighting(0.5,0.5);
+  Lighting light (0.5,0.8, Vertex (0,5,0));
 
   // map each pixel to a value between -1 and 1
   float xInt = 2.0f/(float) screen_width;
@@ -100,9 +109,16 @@ int main(int argc, char *argv[])
       int h = screen_height-1-(ray_y+1)*(screen_height/2);
 
       if (hit.flag==true){
+
+        // TODO calculate lighting here ?
+        float* colour = pm->calculate_lighting(hit, light);
+
+
         fb->plotDepth(w,h,hit.t);
         // calculate colour on object based on normal
-        float* colour = pm->colour_hit(hit);
+        //float* colour = pm->colour_hit(hit);
+
+        // TODO : remove print statements
         //printf("red: %f", colour[0]);
         //printf(" green: %f", colour[1]);
         //printf(" blue: %f", colour[2]);
@@ -110,7 +126,10 @@ int main(int argc, char *argv[])
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       } else {
         fb->plotDepth(w,h,0);
-        float* colour = pm->colour_no_hit(ray);
+        //float* colour = pm->colour_no_hit(ray);
+
+        float* colour = pm->calculate_lighting(hit, light);
+
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       }
 
