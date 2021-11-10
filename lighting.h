@@ -1,10 +1,5 @@
 
-
-#include "ray.h"
-#include "hit.h"
-
 #include "vertex.h"
-
 
 class Lighting{
 public:
@@ -29,12 +24,5 @@ public:
         diffuse_intensity = Ii;
         position = set_position;
     }
-
-    void get_direction();
-
-    void get_intensity();
-
-    void get_position();
-
 
 };

@@ -27,7 +27,6 @@
 #include "polymesh.h"
 #include "ray.h"
 #include "sphere.h"
-#include "lighting.h"
 
 #include <iostream>
 #include <math.h>
