@@ -45,7 +45,6 @@ PolyMesh::PolyMesh(char *file)
 PolyMesh::PolyMesh(char *file, Transform *transform)
 {
   this->do_construct(file, transform);
-
 }
 
 void PolyMesh::do_construct(char *file, Transform *transform)
@@ -128,11 +127,11 @@ void PolyMesh::do_construct(char *file, Transform *transform)
   f_reader.close();
 }
 
-Vector getDirection(Vertex a, Vertex b){
+Vector PolyMesh::getDirection(Vertex a, Vertex b){
   return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
 }
 
-void PolyMesh::intersection(Ray ray, Hit &hit, Vertex camera)
+void PolyMesh::intersection(Ray ray, Hit &hit)
 {
   // for each triangle
   for(int i = 0; i < this->triangle_count; i+=1){
@@ -156,19 +155,20 @@ void PolyMesh::intersection(Ray ray, Hit &hit, Vertex camera)
     if(ray.direction.dot(N) == 0){
       continue;
     }
-
+    
     // get direction vector between the camera (0,0,0) and point on plane e.g. a
-    Vector dir = getDirection(camera,a);
+    Vector dir = getDirection(ray.position,a);
 
-    // if you multiply ray.direction by d, then you get the point on the plane
     float d = dir.dot(N)/ray.direction.dot(N);
+    
     if (d < 0){
       // not intersecting
       continue;
     } 
-
+  
+    // if you multiply ray.direction by d, then you get the point on the plane
     // point on plane where shooting ray intersects
-    Vertex P (camera.x + ray.direction.x*d, camera.y + ray.direction.y*d, camera.z + ray.direction.z*d);
+    Vertex P (ray.position.x + ray.direction.x*d, ray.position.y + ray.direction.y*d, ray.position.z + ray.direction.z*d);
 
     // now need to know if the point P is inside the triangle on the plane
     // get vectors PA, PB and PC
@@ -185,15 +185,120 @@ void PolyMesh::intersection(Ray ray, Hit &hit, Vertex camera)
     PC.cross(ca,c_normal);
 
     // if point is inside shape, all normals will be pointing in the same direction
-    // if dot product between 2 vectors is greater than zero, they are pointing in the same direction
-
+    // if dot product between 2 vectors is greater than zero, they are pointing in the same direction 
     if ((a_normal.dot(b_normal) > 0) && (b_normal.dot(c_normal) > 0)){
       if(d < hit.t){
         hit.t = d;
         hit.flag = true;
+        hit.normal = N;
+        hit.position = P;
       }
     }  
 
   }
+
+}
+
+float* PolyMesh::colour_hit(Hit &hit)
+{
+  
+  float red = 0.5 * (hit.normal.x+1);
+  float green = 0.5 * (hit.normal.y+1);
+  float blue = 0.5 * (-hit.normal.z+1);
+
+  //printf("red: %f", red);
+  //printf(" green: %f", green);
+  //printf(" blue: %f", blue);
+
+  float* colour {new float[3] {red,green,blue}};
+
+  return colour;
+}
+
+float* PolyMesh::colour_no_hit(Ray ray)
+{
+  // based on y direction of ray
+  // function takes ray not hit
+  // create value called t which is the 0.5 * (ray.direction.y + 1)
+  // for each colour
+  // colour is then (1- t) * (colour values of white) + t * (colour values of the other colour in the gradient)
+  float t = 0.5 * (ray.direction.y-0.00222 +1);
+
+  float red = (1-t) * 1 + t * 0.5;
+  float green = (1-t) * 1 + t * 0.7;
+  float blue = (1-t) * 1 + t * 1.0;
+
+  //printf("red: %f", red);
+  //printf(" green: %f", green);
+  //printf(" blue: %f", blue);
+
+  float* colour {new float[3] {red,green,blue}};
+
+  return colour;
+}
+
+float* PolyMesh::calculate_lighting(Hit &hit, Lighting light, int flag)
+{
+  float red;
+  float green;
+  float blue;
+  if (flag == 1){
+    // only ambient light due to shadows
+    red = light.ambient_intensity*ambient[0];
+    green = light.ambient_intensity*ambient[1];
+    blue = light.ambient_intensity*ambient[2];
+
+  } else if (flag == 2){
+    // ambient, diffuse and specular
+    Vector L = getDirection(hit.position, light.position);
+    L.normalise();
+    Vector I = getDirection(light.position, hit.position);
+    I.normalise();
+    Vector R;
+    hit.normal.reflection(I,R);
+    R.normalise();
+    Vector V = getDirection(hit.position, Vertex (0,0,0));
+    V.normalise();
+    int n = 40;
+
+    red = light.ambient_intensity*ambient[0] + light.diffuse_intensity *  ( diffuse[0]*(hit.normal.dot(L))  +  specular[0]*  pow(R.dot(V),n));
+    green = light.ambient_intensity*ambient[1] + light.diffuse_intensity *  ( diffuse[1]*(hit.normal.dot(L))  +  specular[1]*  pow(R.dot(V),n));
+    blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
+
+  } else if (flag == 3){
+    // background (currently black 11/11 10:54 - due to no other objects in scene (i think))
+    red = 0;
+    green = 0;
+    blue = 0;
+  }
+  
+  /*
+  printf("red: %f", red);
+  printf(" green: %f", green);
+  printf(" blue: %f", blue);
+  printf("\n\n");*/
+
+  float* colour {new float[3] {red,green,blue}};
+
+  return colour;
+}
+
+void PolyMesh::set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb)
+{
+  PolyMesh::ambient = new float[3];
+  PolyMesh::diffuse = new float[3];
+  PolyMesh::specular = new float[3];
+
+  ambient[0] = ar;
+  ambient[1] = ag;
+  ambient[2] = ab; 
+
+  diffuse[0] = dr;
+  diffuse[1] = dg;
+  diffuse[2] = db;
+
+  specular[0] = sr;
+  specular[1] = sg;
+  specular[2] = sb; 
 
 }

@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
       Ray ray (camera, Vector (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222));
       ray.direction.normalise();
 
-      pm->intersection(ray, hit, camera);
+      pm->intersection(ray, hit);
       
       int w = (ray_x+1)*(screen_width/2);
       int h = (ray_y+1)*(screen_height/2);
