@@ -200,7 +200,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit, int x)
     //}
     if(x == 2){
       if ((a_normal.dot(b_normal) < 0) && (b_normal.dot(c_normal) < 0)){
-        hit.flag = true;
+        //hit.flag = true;
         //printf("\n\n\n yes \n\n\n");
       }
     }
@@ -265,24 +265,41 @@ float* PolyMesh::colour_no_hit(Ray ray)
   return colour;
 }
 
-float* PolyMesh::calculate_lighting(Hit &hit, Lighting light)
+float* PolyMesh::calculate_lighting(Hit &hit, Lighting light, int flag)
 {
-  Vector L = getDirection(hit.position, light.position);
-  L.normalise();
-  Vector I = getDirection(light.position, hit.position);
-  I.normalise();
-  Vector R;
-  hit.normal.reflection(I,R);
-  R.normalise();
-  Vector V = getDirection(hit.position, Vertex (0,0,0));
-  V.normalise();
+  float red;
+  float green;
+  float blue;
+  if (flag == 1){
+    // only ambient light due to shadows
+    red = light.ambient_intensity*ambient[0];
+    green = light.ambient_intensity*ambient[1];
+    blue = light.ambient_intensity*ambient[2];
 
-  int n = 40;
+  } else if (flag == 2){
+    // ambient, diffuse and specular
+    Vector L = getDirection(hit.position, light.position);
+    L.normalise();
+    Vector I = getDirection(light.position, hit.position);
+    I.normalise();
+    Vector R;
+    hit.normal.reflection(I,R);
+    R.normalise();
+    Vector V = getDirection(hit.position, Vertex (0,0,0));
+    V.normalise();
+    int n = 40;
 
-  float red = light.ambient_intensity*ambient[0] + light.diffuse_intensity *  ( diffuse[0]*(hit.normal.dot(L))  +  specular[0]*  pow(R.dot(V),n));
-  float green = light.ambient_intensity*ambient[1] + light.diffuse_intensity *  ( diffuse[1]*(hit.normal.dot(L))  +  specular[1]*  pow(R.dot(V),n));
-  float blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
+    red = light.ambient_intensity*ambient[0] + light.diffuse_intensity *  ( diffuse[0]*(hit.normal.dot(L))  +  specular[0]*  pow(R.dot(V),n));
+    green = light.ambient_intensity*ambient[1] + light.diffuse_intensity *  ( diffuse[1]*(hit.normal.dot(L))  +  specular[1]*  pow(R.dot(V),n));
+    blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
 
+  } else if (flag == 3){
+    // background (currently 11/11 10:54 - due to no other objects in scene (i think))
+    red = 0;
+    green = 0;
+    blue = 0;
+  }
+  
   /*
   printf("red: %f", red);
   printf(" green: %f", green);
