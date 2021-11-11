@@ -33,8 +33,8 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 1024
-#define screen_height 1024
+#define screen_width 2048
+#define screen_height 2048
 
 int main(int argc, char *argv[])
 {
@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
   Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, -1.0f, 3.0f, 
-    0.0f, 1.0f, 0.0f, 7.0f,
+    0.0f, 0.0f, -1.0f, 2.0f, 
+    0.0f, 1.0f, 0.0f, 5.5f,
     0.0f, 0.0f, 0.0f, 1.0f
     );
 
