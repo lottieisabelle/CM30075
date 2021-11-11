@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
       // generate the shooting ray
       Ray shooting_ray (Vertex (0,0,0), Vector (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222));
       shooting_ray.direction.normalise();
-      pm->intersection(shooting_ray, shooting_hit, 1);
+      pm->intersection(shooting_ray, shooting_hit);
 
       int w = (ray_x+1)*(screen_width/2);
       int h = (ray_y+1)*(screen_height/2);
@@ -107,11 +107,10 @@ int main(int argc, char *argv[])
         shadow_hit.t = 99999999;
         
         Vertex shadow_point = Vertex (shooting_hit.position.x-0.00222, shooting_hit.position.y-0.00222, shooting_hit.position.z-0.00222);
-
         Vector shadow_dir = pm->getDirection(shadow_point, light.position);
         Ray shadow_ray (shadow_point, shadow_dir);
 
-        pm->intersection(shadow_ray, shadow_hit, 2);
+        pm->intersection(shadow_ray, shadow_hit);
 
         if (shadow_hit.flag==true){
           // only ambient lighting

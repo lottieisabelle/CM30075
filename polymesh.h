@@ -34,7 +34,7 @@ public:
 
 	Vector getDirection(Vertex a, Vertex b);
 
-	void intersection(Ray ray, Hit &hit, int x);
+	void intersection(Ray ray, Hit &hit);
 
 	float* colour_hit(Hit &hit);
 
