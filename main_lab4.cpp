@@ -67,7 +67,8 @@ int main(int argc, char *argv[])
     );
 
   // Read in the teapot model.
-  PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
+  PolyMesh *pm = new PolyMesh((char *)"teapot_small.ply", transform, 0);
+  //PolyMesh *pm = new PolyMesh((char *)"teapot_big.ply", transform, 1); 
 
   // set surface coefficients for lighting for each component
   pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);
