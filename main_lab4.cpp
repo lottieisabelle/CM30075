@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   PolyMesh *pm = new PolyMesh((char *)"teapot_small.ply", transform, 0);
   //PolyMesh *pm = new PolyMesh((char *)"teapot_big.ply", transform, 1); 
 
-  // set surface coefficients for lighting for each component
+  // set surface coefficients for lighting for each component and colour
   pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);
 
   // create light - set ambient light intensity and diffuse intensity of light
@@ -101,7 +101,6 @@ int main(int argc, char *argv[])
 
       // determine which lighting calculation is needed
       if (shooting_hit.flag==true){
-
         // calculate if shadows here
         Hit shadow_hit;
         shadow_hit.flag = false;

@@ -266,7 +266,7 @@ float* PolyMesh::calculate_lighting(Hit &hit, Lighting light, int flag)
     blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
 
   } else if (flag == 3){
-    // background (currently black 11/11 10:54 - due to no other objects in scene (i think))
+    // background (currently black 11/11 10:54)
     red = 0;
     green = 0;
     blue = 0;

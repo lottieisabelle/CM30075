@@ -16,6 +16,7 @@ public:
     {
         ambient_intensity = 0.5;
         diffuse_intensity = 0.5;
+        position = Vertex (-4,-1,1);
     }
 
     Lighting(float Ia, float Ii, Vertex set_position)
