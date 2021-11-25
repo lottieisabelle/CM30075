@@ -113,7 +113,6 @@ void PolyMesh::do_construct(char *file, Transform *transform, int flag)
         if(axis_count != 0){
 
           int number = std::stoi(index_value);
-          // uncomment line below for big teapot
           number -= flag;
           
           PolyMesh::triangle[i][axis_count-1] = number;
