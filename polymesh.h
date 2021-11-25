@@ -30,7 +30,7 @@ public:
     float *diffuse;
 	float *specular;
 
-	void do_construct(char *file, Transform *transform);
+	void do_construct(char *file, Transform *transform, int x);
 
 	Vector getDirection(Vertex a, Vertex b);
 
@@ -44,6 +44,6 @@ public:
 
 	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb);
 	
-	PolyMesh(char *file);
-	PolyMesh(char *file, Transform *transform);
+	PolyMesh(char *file, int x);
+	PolyMesh(char *file, Transform *transform, int x);
 };

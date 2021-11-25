@@ -35,19 +35,19 @@ int get_face_count(string line)
   return face_count;
 }
 
-PolyMesh::PolyMesh(char *file)
+PolyMesh::PolyMesh(char *file, int x)
 {
   Transform *transform = new Transform();
 
-  this->do_construct(file, transform);
+  this->do_construct(file, transform, x);
 }
 
-PolyMesh::PolyMesh(char *file, Transform *transform)
+PolyMesh::PolyMesh(char *file, Transform *transform, int x)
 {
-  this->do_construct(file, transform);
+  this->do_construct(file, transform, x);
 }
 
-void PolyMesh::do_construct(char *file, Transform *transform)
+void PolyMesh::do_construct(char *file, Transform *transform, int flag)
 {
   // open the file
   std::ifstream f_reader(file);
@@ -113,8 +113,8 @@ void PolyMesh::do_construct(char *file, Transform *transform)
         if(axis_count != 0){
 
           int number = std::stoi(index_value);
-          // for smaller teapot take out minus 1
-          //number -= 1;
+          // uncomment line below for big teapot
+          number -= flag;
           
           PolyMesh::triangle[i][axis_count-1] = number;
         }
@@ -266,7 +266,7 @@ float* PolyMesh::calculate_lighting(Hit &hit, Lighting light, int flag)
     blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
 
   } else if (flag == 3){
-    // background (currently black 11/11 10:54 - due to no other objects in scene (i think))
+    // background (currently black 11/11 10:54)
     red = 0;
     green = 0;
     blue = 0;

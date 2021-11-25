@@ -33,8 +33,8 @@
 #include <math.h>
 #include <float.h>
 
-#define screen_width 1024
-#define screen_height 1024
+#define screen_width 2048
+#define screen_height 2048
 
 int main(int argc, char *argv[])
 {
@@ -61,15 +61,16 @@ int main(int argc, char *argv[])
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
   Transform *transform = new Transform(
     1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, -1.0f, 3.0f, 
-    0.0f, 1.0f, 0.0f, 7.0f,
+    0.0f, 0.0f, -1.0f, 2.0f, 
+    0.0f, 1.0f, 0.0f, 5.5f,
     0.0f, 0.0f, 0.0f, 1.0f
     );
 
   // Read in the teapot model.
-  PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
+  PolyMesh *pm = new PolyMesh((char *)"teapot_small.ply", transform, 0);
+  //PolyMesh *pm = new PolyMesh((char *)"teapot_big.ply", transform, 1); 
 
-  // set surface coefficients for lighting for each component
+  // set surface coefficients for lighting for each component and colour
   pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);
 
   // create light - set ambient light intensity and diffuse intensity of light
@@ -100,7 +101,6 @@ int main(int argc, char *argv[])
 
       // determine which lighting calculation is needed
       if (shooting_hit.flag==true){
-
         // calculate if shadows here
         Hit shadow_hit;
         shadow_hit.flag = false;
