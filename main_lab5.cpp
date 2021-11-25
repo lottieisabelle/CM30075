@@ -13,7 +13,7 @@
  *
  * Compile the code using g++ -o lab5executable main_lab5.cpp framebuffer.cpp polymesh.cpp -lm
  *
- * Execute the code using ./lab4executable
+ * Execute the code using ./lab5executable
  *
  * This will produce an image file called test.ppm. You can convert this a png file for viewing using
  *
@@ -27,6 +27,7 @@
 #include "polymesh.h"
 #include "ray.h"
 #include "sphere.h"
+#include "scene.h"
 
 #include <iostream>
 #include <sstream>
@@ -38,6 +39,13 @@
 
 int main(int argc, char *argv[])
 {
+  // create a scene that contains the ambient light
+  // Scene *picture = new Scene(0.5);
+  Scene picture (0.5);
+
+  // create lights
+  Lighting light (0.8, Vertex (-4,-1,1));
+
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
 
@@ -70,10 +78,7 @@ int main(int argc, char *argv[])
   //PolyMesh *pm = new PolyMesh((char *)"teapot_big.ply", transform, 1); 
 
   // set surface coefficients for lighting for each component and colour
-  pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);
-
-  // create light - set ambient light intensity and diffuse intensity of light
-  Lighting light (0.5,0.8, Vertex (-4,-1,1));
+  pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);  
 
   // map each pixel to a value between -1 and 1
   float xInt = 2.0f/(float) screen_width;
@@ -113,16 +118,16 @@ int main(int argc, char *argv[])
 
         if (shadow_hit.flag==true){
           // only ambient lighting
-          float* colour = pm->calculate_lighting(shooting_hit, light, 1);
+          float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 1);
           fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
         } else {
           // ambient, diffuse and specular lighting
-          float* colour = pm->calculate_lighting(shooting_hit, light, 2);
+          float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 2);
           fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
         }
       } else {
         // background - currently just black
-        float* colour = pm->calculate_lighting(shooting_hit, light, 3);
+        float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 3);
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       }
 

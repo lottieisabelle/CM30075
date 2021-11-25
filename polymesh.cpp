@@ -236,19 +236,20 @@ float* PolyMesh::colour_no_hit(Ray ray)
   return colour;
 }
 
-float* PolyMesh::calculate_lighting(Hit &hit, Lighting light, int flag)
+float* PolyMesh::calculate_lighting(Hit &hit, float Ia, Lighting light, int flag)
 {
   float red;
   float green;
   float blue;
   if (flag == 1){
     // only ambient light due to shadows
-    red = light.ambient_intensity*ambient[0];
-    green = light.ambient_intensity*ambient[1];
-    blue = light.ambient_intensity*ambient[2];
+    red = Ia*ambient[0];
+    green = Ia*ambient[1];
+    blue = Ia*ambient[2];
 
   } else if (flag == 2){
     // ambient, diffuse and specular
+    
     Vector L = getDirection(hit.position, light.position);
     L.normalise();
     Vector I = getDirection(light.position, hit.position);
@@ -260,9 +261,9 @@ float* PolyMesh::calculate_lighting(Hit &hit, Lighting light, int flag)
     V.normalise();
     int n = 40;
 
-    red = light.ambient_intensity*ambient[0] + light.diffuse_intensity *  ( diffuse[0]*(hit.normal.dot(L))  +  specular[0]*  pow(R.dot(V),n));
-    green = light.ambient_intensity*ambient[1] + light.diffuse_intensity *  ( diffuse[1]*(hit.normal.dot(L))  +  specular[1]*  pow(R.dot(V),n));
-    blue = light.ambient_intensity*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
+    red = Ia*ambient[0] + light.diffuse_intensity *  ( diffuse[0]*(hit.normal.dot(L))  +  specular[0]*  pow(R.dot(V),n));
+    green = Ia*ambient[1] + light.diffuse_intensity *  ( diffuse[1]*(hit.normal.dot(L))  +  specular[1]*  pow(R.dot(V),n));
+    blue = Ia*ambient[2] + light.diffuse_intensity *  ( diffuse[2]*(hit.normal.dot(L))  +  specular[2]*  pow(R.dot(V),n));
 
   } else if (flag == 3){
     // background (currently black 11/11 10:54)

@@ -40,7 +40,7 @@ public:
 
 	float* colour_no_hit(Ray ray);
 
-	float* calculate_lighting(Hit &hit, Lighting light, int flag);
+	float* calculate_lighting(Hit &hit, float Ia, Lighting light, int flag);
 
 	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb);
 	
