@@ -40,15 +40,6 @@
 
 int main(int argc, char *argv[])
 {
-  // create a scene that contains the ambient light
-  // Scene *picture = new Scene(0.5);
-  Scene picture (0.5);
-
-  // create lights
-  Lighting light (0.8, Vertex (-4,-1,1));
-
-  
-
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
 
@@ -74,24 +65,32 @@ int main(int argc, char *argv[])
     0.0f, 0.0f, -1.0f, 2.0f, 
     0.0f, 1.0f, 0.0f, 5.5f,
     0.0f, 0.0f, 0.0f, 1.0f
-    );
+  );
+
+  // create a scene that contains the ambient light, lights and objects
+  Scene picture (0.5);
+
+  // create directional light
+  Lighting light (0.8, Vertex (-4,-1,1));
+
+  // add light to scene
+  picture.addLight(light);
 
   // Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot_small.ply", transform, 0);
   //PolyMesh *pm = new PolyMesh((char *)"teapot_big.ply", transform, 1); 
 
+  // add teapot to scene
+  picture.addObject(pm);
+
   // create sphere
   Sphere ball (Vertex(2,2,5), 2.5);
 
-  // create list of objects
-  //Object list = [pm, ball];
+  // add sphere to scene
+  picture.addObject(&ball);
 
-  Object ball = ball;
-  Object teapot = *pm;
-  ball.next = &teapot;
-
-  // set surface coefficients for lighting for each component and colour
-  pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);  
+  ball.set_coeffs(0, 0.7, 0.2, 0, 0.7, 0.2, 0.4, 0.4, 0.4);
+  pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);
 
   // map each pixel to a value between -1 and 1
   float xInt = 2.0f/(float) screen_width;
@@ -134,7 +133,7 @@ int main(int argc, char *argv[])
         shadow_hit.t = 99999999;
         
         Vertex shadow_point = Vertex (shooting_hit.position.x-0.00222, shooting_hit.position.y-0.00222, shooting_hit.position.z-0.00222);
-        Vector shadow_dir = pm->getDirection(shadow_point, light.position);
+        Vector shadow_dir = shadow_point.getDirection(light.position);
         Ray shadow_ray (shadow_point, shadow_dir);
 
         pm->intersection(shadow_ray, shadow_hit);

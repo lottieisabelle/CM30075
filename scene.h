@@ -26,5 +26,7 @@ public:
 
     Colour raytracer(Ray ray, Hit &hit);
 
+    Colour calculate_lighting(Lighting light, Hit &hit);
+
     
 };

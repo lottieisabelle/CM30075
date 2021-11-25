@@ -17,6 +17,28 @@ void Scene::render_image()
 
 }
 
+Colour Scene::calculate_lighting(Lighting light, Hit &hit)
+{
+    Colour col;
+
+    Vector L = hit.position.getDirection(light.position);
+    L.normalise();
+    Vector I = light.position.getDirection(hit.position);
+    I.normalise();
+    Vector R;
+    hit.normal.reflection(I,R);
+    R.normalise();
+    Vector V = hit.position.getDirection(Vertex (0,0,0));
+    V.normalise();
+    int n = 40;
+
+    col.red = light.diffuse_intensity *  ( hit.what->diffuse[0]*(hit.normal.dot(L))  +  hit.what->specular[0]*  pow(R.dot(V),n));
+    col.green = light.diffuse_intensity *  ( hit.what->diffuse[1]*(hit.normal.dot(L))  +  hit.what->specular[1]*  pow(R.dot(V),n));
+    col.blue = light.diffuse_intensity *  ( hit.what->diffuse[2]*(hit.normal.dot(L))  +  hit.what->specular[2]*  pow(R.dot(V),n));
+
+    return col;
+}
+
 Colour Scene::raytracer(Ray ray, Hit &hit)
 {
     Colour final_colour = ambient_intensity;
@@ -42,6 +64,8 @@ Colour Scene::raytracer(Ray ray, Hit &hit)
         if (shadow_hit.flag == true){
             continue;
         }
+
+        final_colour = calculate_lighting(light, hit);
 
         // do diffuse and specular here
     }
