@@ -25,11 +25,6 @@ public:
     Vertex *vertex;
 	TriangleIndex *triangle;
 
-	// coefficients
-	float *ambient;
-    float *diffuse;
-	float *specular;
-
 	void do_construct(char *file, Transform *transform, int x);
 
 	void intersection(Ray ray, Hit &hit);
@@ -37,10 +32,6 @@ public:
 	float* colour_hit(Hit &hit);
 
 	float* colour_no_hit(Ray ray);
-
-	float* calculate_lighting(Hit &hit, float Ia, Lighting light, int flag);
-
-	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb);
 	
 	PolyMesh(char *file, int x);
 	PolyMesh(char *file, Transform *transform, int x);

@@ -32,9 +32,9 @@ Colour Scene::calculate_lighting(Lighting light, Hit &hit)
     V.normalise();
     int n = 40;
 
-    col.red = light.diffuse_intensity *  ( hit.what->diffuse[0]*(hit.normal.dot(L))  +  hit.what->specular[0]*  pow(R.dot(V),n));
-    col.green = light.diffuse_intensity *  ( hit.what->diffuse[1]*(hit.normal.dot(L))  +  hit.what->specular[1]*  pow(R.dot(V),n));
-    col.blue = light.diffuse_intensity *  ( hit.what->diffuse[2]*(hit.normal.dot(L))  +  hit.what->specular[2]*  pow(R.dot(V),n));
+    col.red = light.diffuse_intensity *  ( hit.what->diffuse.red*(hit.normal.dot(L))  +  hit.what->specular.red*  pow(R.dot(V),n));
+    col.green = light.diffuse_intensity *  ( hit.what->diffuse.green*(hit.normal.dot(L))  +  hit.what->specular.green*  pow(R.dot(V),n));
+    col.blue = light.diffuse_intensity *  ( hit.what->diffuse.blue*(hit.normal.dot(L))  +  hit.what->specular.blue*  pow(R.dot(V),n));
 
     return col;
 }
@@ -52,6 +52,8 @@ Colour Scene::raytracer(Ray ray, Hit &hit)
         return Colour (0.0, 0.0, 0.0);
     }
 
+    final_colour.multiply(hit.what->ambient);
+
     for(Lighting light : light_list){
         Hit shadow_hit;
         shadow_hit.flag = false;
@@ -65,38 +67,9 @@ Colour Scene::raytracer(Ray ray, Hit &hit)
             continue;
         }
 
+        // adds diffuse and specular light
         final_colour = calculate_lighting(light, hit);
-
-        // do diffuse and specular here
     }
-
-    
-    // TODO : reverse y direction?
-    //int h = screen_height-1-(ray_y+1)*(screen_height/2);
-
-    // determine which lighting calculation is needed
-    if (shooting_hit.flag==true){
-    // calculate if shadows here
-    
-
-    pm->intersection(shadow_ray, shadow_hit);
-    ball.intersection(shadow_ray, shadow_hit);
-
-    if (shadow_hit.flag==true){
-        // only ambient lighting
-        float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 1);
-        fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
-    } else {
-        // ambient, diffuse and specular lighting
-        float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 2);
-        fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
-    }
-    } else {
-    // background - currently just black
-    float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 3);
-    fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
-    }
-
 
     return final_colour;
 }

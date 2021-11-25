@@ -114,60 +114,12 @@ int main(int argc, char *argv[])
 
       Colour colour = picture.raytracer(shooting_ray, shooting_hit);
 
-
-
-
-
-
-
-      pm->intersection(shooting_ray, shooting_hit);
-      ball.intersection(shooting_ray, shooting_hit);
-      // TODO : reverse y direction?
-      //int h = screen_height-1-(ray_y+1)*(screen_height/2);
-
-      // determine which lighting calculation is needed
-      if (shooting_hit.flag==true){
-        // calculate if shadows here
-        Hit shadow_hit;
-        shadow_hit.flag = false;
-        shadow_hit.t = 99999999;
-        
-        Vertex shadow_point = Vertex (shooting_hit.position.x-0.00222, shooting_hit.position.y-0.00222, shooting_hit.position.z-0.00222);
-        Vector shadow_dir = shadow_point.getDirection(light.position);
-        Ray shadow_ray (shadow_point, shadow_dir);
-
-        pm->intersection(shadow_ray, shadow_hit);
-        ball.intersection(shadow_ray, shadow_hit);
-
-        if (shadow_hit.flag==true){
-          // only ambient lighting
-          float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 1);
-          fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
-        } else {
-          // ambient, diffuse and specular lighting
-          float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 2);
-          fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
-        }
-      } else {
-        // background - currently just black
-        float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 3);
-        fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
-      }
-
-      // plot pixel here
-
-      // plot depth
-      if (shooting_hit.flag==true){
-        fb->plotDepth(w,h,shooting_hit.t);
-      } else {
-        fb->plotDepth(w,h,0);
-      }
+      fb->plotPixel(w,h,colour.red, colour.green, colour.blue);
 
     }
   }
 
   // Output the framebuffer.
-  fb->writeDepthFile((char *)"test depth.ppm");
   fb->writeRGBFile((char *)"test colour.ppm");
 
   return 0;

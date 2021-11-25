@@ -14,4 +14,10 @@ class Colour{
             green = g;
             blue = b;
         }
+
+        void multiply(Colour scale){
+            red = red * scale.red;
+            green = green * scale.green;
+            blue = blue * scale.blue;
+        }
 };
