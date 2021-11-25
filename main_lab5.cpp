@@ -11,7 +11,7 @@
  *
  * On linux.bath.ac.uk:
  *
- * Compile the code using g++ -o lab4executable main_lab4.cpp framebuffer.cpp polymesh.cpp -lm
+ * Compile the code using g++ -o lab5executable main_lab5.cpp framebuffer.cpp polymesh.cpp -lm
  *
  * Execute the code using ./lab4executable
  *
