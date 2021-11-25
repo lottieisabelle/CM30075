@@ -28,7 +28,6 @@
 #include "ray.h"
 #include "sphere.h"
 #include "scene.h"
-#include "colour.h"
 
 #include <iostream>
 #include <sstream>

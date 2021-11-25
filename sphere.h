@@ -16,4 +16,5 @@ class Sphere : public Object {
 public:
 	Sphere(Vertex c, float r);
 	void intersection(Ray ray, Hit &hit);
+	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb);
 };

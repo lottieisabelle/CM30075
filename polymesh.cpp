@@ -139,7 +139,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
     // create vectors
 
     Vector ab = a.getDirection(b);
-    Vector ab = a.getDirection(c);
+    Vector ac = a.getDirection(c);
     Vector bc = b.getDirection(c);
     Vector ca = c.getDirection(a);
 
@@ -233,4 +233,9 @@ float* PolyMesh::colour_no_hit(Ray ray)
   float* colour {new float[3] {red,green,blue}};
 
   return colour;
+}
+
+void PolyMesh::set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb)
+{
+  Object::set_coeffs(ar, ag, ab, dr, dg, db, sr, sg, sb);
 }

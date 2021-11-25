@@ -32,6 +32,8 @@ public:
 	float* colour_hit(Hit &hit);
 
 	float* colour_no_hit(Ray ray);
+
+	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb);
 	
 	PolyMesh(char *file, int x);
 	PolyMesh(char *file, Transform *transform, int x);
