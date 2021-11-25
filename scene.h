@@ -1,16 +1,30 @@
-
+#include <vector>
+#include "object.h"
+#include "lighting.h"
+#include "colour.h"
 
 class Scene{
 public:
-    float ambient_intensity;
+    Colour ambient_intensity;
+    std::vector<Object*> object_list;
+    std::vector<Lighting> light_list;
 
     Scene()
     {
-        ambient_intensity = 0.5;
+        ambient_intensity = Colour (0.5, 0.5, 0.5);
     }
 
     Scene(float Ia)
     {
-        ambient_intensity = Ia;
+        ambient_intensity = Colour (Ia, Ia, Ia);
     }
+
+    void addObject(Object *object);
+    void addLight(Lighting light);
+
+    void render_image();
+
+    Colour raytracer(Ray ray, Hit &hit);
+
+    
 };

@@ -28,6 +28,7 @@
 #include "ray.h"
 #include "sphere.h"
 #include "scene.h"
+#include "colour.h"
 
 #include <iostream>
 #include <sstream>
@@ -45,6 +46,8 @@ int main(int argc, char *argv[])
 
   // create lights
   Lighting light (0.8, Vertex (-4,-1,1));
+
+  
 
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(screen_width,screen_height);
@@ -77,6 +80,16 @@ int main(int argc, char *argv[])
   PolyMesh *pm = new PolyMesh((char *)"teapot_small.ply", transform, 0);
   //PolyMesh *pm = new PolyMesh((char *)"teapot_big.ply", transform, 1); 
 
+  // create sphere
+  Sphere ball (Vertex(2,2,5), 2.5);
+
+  // create list of objects
+  //Object list = [pm, ball];
+
+  Object ball = ball;
+  Object teapot = *pm;
+  ball.next = &teapot;
+
   // set surface coefficients for lighting for each component and colour
   pm->set_coeffs(0, 0.8, 0.8, 0, 0.8, 0.8, 0.4, 0.4, 0.4);  
 
@@ -87,6 +100,9 @@ int main(int argc, char *argv[])
   // for each section in the mapped size image
   for (float ray_x = -1.0; ray_x < 1.0; ray_x+=xInt){
     for (float ray_y = -1.0; ray_y < 1.0; ray_y+=yInt){
+
+      int w = (ray_x+1)*(screen_width/2);
+      int h = (ray_y+1)*(screen_height/2);
       
       Hit shooting_hit;
       shooting_hit.flag = false;
@@ -96,10 +112,17 @@ int main(int argc, char *argv[])
       // generate the shooting ray
       Ray shooting_ray (Vertex (0,0,0), Vector (ray_x+0.00222,ray_y+0.00222,ray_z+0.00222));
       shooting_ray.direction.normalise();
-      pm->intersection(shooting_ray, shooting_hit);
 
-      int w = (ray_x+1)*(screen_width/2);
-      int h = (ray_y+1)*(screen_height/2);
+      Colour colour = picture.raytracer(shooting_ray, shooting_hit);
+
+
+
+
+
+
+
+      pm->intersection(shooting_ray, shooting_hit);
+      ball.intersection(shooting_ray, shooting_hit);
       // TODO : reverse y direction?
       //int h = screen_height-1-(ray_y+1)*(screen_height/2);
 
@@ -115,6 +138,7 @@ int main(int argc, char *argv[])
         Ray shadow_ray (shadow_point, shadow_dir);
 
         pm->intersection(shadow_ray, shadow_hit);
+        ball.intersection(shadow_ray, shadow_hit);
 
         if (shadow_hit.flag==true){
           // only ambient lighting
@@ -130,6 +154,8 @@ int main(int argc, char *argv[])
         float* colour = pm->calculate_lighting(shooting_hit, picture.ambient_intensity, light, 3);
         fb->plotPixel(w,h,colour[0],colour[1],colour[2]);
       }
+
+      // plot pixel here
 
       // plot depth
       if (shooting_hit.flag==true){
