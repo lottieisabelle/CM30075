@@ -16,6 +16,10 @@ class Object {
 public:
 
 	Object *next;
+	// coefficients
+	float *ambient;
+    float *diffuse;
+	float *specular;
 
 	Object()
 	{
@@ -25,6 +29,22 @@ public:
 	virtual void intersection(Ray ray, Hit &hit)
 	{
 
+	}
+
+	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb)
+	{
+
+		ambient[0] = ar;
+		ambient[1] = ag;
+		ambient[2] = ab; 
+
+		diffuse[0] = dr;
+		diffuse[1] = dg;
+		diffuse[2] = db;
+
+		specular[0] = sr;
+		specular[1] = sg;
+		specular[2] = sb; 
 	}
 };
 
