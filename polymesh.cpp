@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include "polymesh.h"
+#include "object.h"
 
 using namespace std;
 
@@ -126,10 +127,6 @@ void PolyMesh::do_construct(char *file, Transform *transform, int flag)
   f_reader.close();
 }
 
-Vector PolyMesh::getDirection(Vertex a, Vertex b){
-  return Vector ((b.x-a.x),(b.y-a.y),(b.z-a.z));
-}
-
 void PolyMesh::intersection(Ray ray, Hit &hit)
 {
   // for each triangle
@@ -140,10 +137,11 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
     Vertex c = this->vertex[this->triangle[i][2]];
 
     // create vectors
-    Vector ab = getDirection(a,b);
-    Vector ac = getDirection(a,c);
-    Vector bc = getDirection(b,c);
-    Vector ca = getDirection(c,a);
+
+    Vector ab = a.getDirection(b);
+    Vector ab = a.getDirection(c);
+    Vector bc = b.getDirection(c);
+    Vector ca = c.getDirection(a);
 
     // find the normal to the plane abc
     Vector N;
@@ -156,7 +154,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
     }
     
     // get direction vector between the camera (0,0,0) and point on plane e.g. a
-    Vector dir = getDirection(ray.position,a);
+    Vector dir = ray.position.getDirection(a);
 
     float d = dir.dot(N)/ray.direction.dot(N);
     
@@ -171,9 +169,9 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
 
     // now need to know if the point P is inside the triangle on the plane
     // get vectors PA, PB and PC
-    Vector PA = getDirection(P,a);
-    Vector PB = getDirection(P,b);
-    Vector PC = getDirection(P,c);
+    Vector PA = P.getDirection(a);
+    Vector PB = P.getDirection(b);
+    Vector PC = P.getDirection(c);
 
     // calculate cross products to get normal at each vertex of triangle
     Vector a_normal;
@@ -191,6 +189,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
         hit.flag = true;
         hit.normal = N;
         hit.position = P;
+        hit.what = this;
       }
     }  
 
@@ -250,14 +249,14 @@ float* PolyMesh::calculate_lighting(Hit &hit, float Ia, Lighting light, int flag
   } else if (flag == 2){
     // ambient, diffuse and specular
     
-    Vector L = getDirection(hit.position, light.position);
+    Vector L = hit.position.getDirection(light.position);
     L.normalise();
-    Vector I = getDirection(light.position, hit.position);
+    Vector I = light.position.getDirection(hit.position);
     I.normalise();
     Vector R;
     hit.normal.reflection(I,R);
     R.normalise();
-    Vector V = getDirection(hit.position, Vertex (0,0,0));
+    Vector V = hit.position.getDirection(Vertex (0,0,0));
     V.normalise();
     int n = 40;
 

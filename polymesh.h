@@ -18,7 +18,7 @@
 
 typedef int TriangleIndex[3];
 
-class PolyMesh {
+class PolyMesh : public Object {
 public:
 	int vertex_count;
 	int triangle_count;
@@ -31,8 +31,6 @@ public:
 	float *specular;
 
 	void do_construct(char *file, Transform *transform, int x);
-
-	Vector getDirection(Vertex a, Vertex b);
 
 	void intersection(Ray ray, Hit &hit);
 
