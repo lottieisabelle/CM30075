@@ -251,30 +251,7 @@ int main(int argc, char *argv[])
   //  Read in the teapot model.
   PolyMesh *pm = new PolyMesh((char *)"teapot_smaller.ply", transform);
 
-  Vertex v;
-  v.x = 0.0f;
-  v.y = 0.0f;
-  v.z = 5.0f;
-  
-  Sphere *sphere = new Sphere(v, 1.0f);
-
-  Vertex v2;
-  v2.x = -1.0f;
-  v2.y = 1.0f;
-  v2.z = 3.0f;
-  
-  Sphere *sphere2 = new Sphere(v2,0.5f);
-
-  //  sphere->next = pm;
-
-  Ray ray;
-
-  ray.position.x = 0.0001f;
-  ray.position.y = 0.0f;
-  ray.position.z = 0.0f;
-
-  DirectionalLight *dl = new DirectionalLight(Vector(1.01f, -1.0f, 1.0f),Colour(1.0f, 1.0f, 1.0f, 0.0f));
-
+  // create material properties for teapot
   Phong bp1;
 
 	bp1.ambient.r = 0.0f;
@@ -287,7 +264,6 @@ int main(int argc, char *argv[])
 	bp1.specular.g = 0.4f;
 	bp1.specular.b = 0.4f;
 	bp1.power = 40.0f;
-  //bp1.reflection = 0.0f;
 
 	pm->material = &bp1;
 
@@ -296,6 +272,13 @@ int main(int argc, char *argv[])
   pm->material->index_refraction = 0.0f;
   pm->material->k_refraction = 0.0f;
 
+  // create spheres and material properties of spheres
+  Vertex v;
+  v.x = 2.0f;
+  v.y = 2.0f;
+  v.z = 5.0f;
+  
+  Sphere *sphere = new Sphere(v, 0.75f);
   Phong bp2;
 
   bp2.ambient.r = 0.0f;
@@ -308,18 +291,54 @@ int main(int argc, char *argv[])
 	bp2.specular.g = 0.4f;
 	bp2.specular.b = 0.4f;
 	bp2.power = 40.0f;
-  //bp2.reflection = 1.0f;
 
 	sphere->material = &bp2;
 
- 	sphere2->material = &bp2;
+  sphere->material->k_reflection = 0.8f;
+  sphere->material->k_refraction = 0.8f;
+  sphere->material->index_refraction = 1.33f; // water
+
+  Vertex v2;
+  v2.x = -1.0f;
+  v2.y = 1.0f;
+  v2.z = 3.0f;
+  
+  Sphere *sphere2 = new Sphere(v2,0.5f);
+
+  Phong bp3;
+  // create material properties for spheres
+
+  bp3.ambient.r = 0.0f;
+	bp3.ambient.g = 0.2f;
+	bp3.ambient.b = 0.0f;
+	bp3.diffuse.r = 0.0f;
+	bp3.diffuse.g = 0.4f;
+	bp3.diffuse.b = 0.0f;
+	bp3.specular.r = 0.4f;
+	bp3.specular.g = 0.4f;
+	bp3.specular.b = 0.4f;
+	bp3.power = 40.0f;
+
+ 	sphere2->material = &bp3;
 
   sphere2->material->k_reflection = 0.8f;
+  sphere2->material->k_refraction = 0.8f;
   // glass
   sphere2->material->index_refraction = 1.52f;
-  sphere2->material->k_refraction = 0.8f;
+    
+  // link objects
+  pm->next = sphere;
+  sphere->next = sphere2;
   
-	pm->next = sphere2;
+  // generate shooting ray from camera point
+  Ray ray;
+
+  ray.position.x = 0.0001f;
+  ray.position.y = 0.0f;
+  ray.position.z = 0.0f;
+
+  // create directional light
+  DirectionalLight *dl = new DirectionalLight(Vector(1.01f, -1.0f, 1.0f),Colour(1.0f, 1.0f, 1.0f, 0.0f));
 
   for (int y = 0; y < height; y += 1)
   {
@@ -344,7 +363,7 @@ int main(int argc, char *argv[])
       raytrace(ray, pm, dl, colour, depth, d);
 
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
-      fb->plotDepth(x,y, depth);
+      //fb->plotDepth(x,y, depth);
     }
 
     cerr << "*" << flush;
