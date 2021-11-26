@@ -280,13 +280,14 @@ int main(int argc, char *argv[])
   
   Sphere *sphere = new Sphere(v, 0.75f);
   Phong bp2;
+  // rgb(127,0,255)
 
-  bp2.ambient.r = 0.0f;
-	bp2.ambient.g = 0.2f;
-	bp2.ambient.b = 0.0f;
-	bp2.diffuse.r = 0.0f;
-	bp2.diffuse.g = 0.4f;
-	bp2.diffuse.b = 0.0f;
+  bp2.ambient.r = 0.498f;
+	bp2.ambient.g = 0.0f;
+	bp2.ambient.b = 1.0f;
+	bp2.diffuse.r = 0.498f;
+	bp2.diffuse.g = 0.0f;
+	bp2.diffuse.b = 1.0f;
 	bp2.specular.r = 0.4f;
 	bp2.specular.g = 0.4f;
 	bp2.specular.b = 0.4f;
@@ -306,13 +307,13 @@ int main(int argc, char *argv[])
   Sphere *sphere2 = new Sphere(v2,0.5f);
 
   Phong bp3;
-  // create material properties for spheres
+  // rgb(255,128,0)
 
-  bp3.ambient.r = 0.0f;
-	bp3.ambient.g = 0.2f;
+  bp3.ambient.r = 1.0f;
+	bp3.ambient.g = 0.502f;
 	bp3.ambient.b = 0.0f;
-	bp3.diffuse.r = 0.0f;
-	bp3.diffuse.g = 0.4f;
+	bp3.diffuse.r = 1.0f;
+	bp3.diffuse.g = 0.502f;
 	bp3.diffuse.b = 0.0f;
 	bp3.specular.r = 0.4f;
 	bp3.specular.g = 0.4f;
