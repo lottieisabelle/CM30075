@@ -152,6 +152,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
     ab.cross(ac,N);
     N.normalise();
 
+    // ray is parallel to plane
     if(ray.direction.dot(N) == 0){
       continue;
     }

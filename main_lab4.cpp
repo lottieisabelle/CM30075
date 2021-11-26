@@ -76,9 +76,12 @@ void object_test(Ray ray, Object *objects, Hit &best_hit)
   return;
 }
 
-void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &depth, int d)
+void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &depth, int r_d, int t_d)
 {
-  if(d <= 0){
+  if(r_d <= 0){
+    return;
+  }
+  if(t_d <=0){
     return;
   }
   // first step, find the closest primitive
@@ -175,7 +178,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       kr_col.b = kr;
 
       Colour col;
-      raytrace(r_ray, objects, lights, col, depth, d-1);
+      raytrace(r_ray, objects, lights, col, depth, r_d-1, t_d);
 
       col.scale(kr_col);
       colour.add(col);
@@ -219,7 +222,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       kt_col.b = kt;
 
       Colour col;
-      raytrace(T_ray, objects, lights, col, depth, d-1);
+      raytrace(T_ray, objects, lights, col, depth, r_d, t_d-1);
 
       col.scale(kt_col);
       colour.add(col);
@@ -255,11 +258,11 @@ int main(int argc, char *argv[])
   Phong bp1;
 
 	bp1.ambient.r = 0.0f;
-	bp1.ambient.g = 0.4f;
-	bp1.ambient.b = 0.4f;
+	bp1.ambient.g = 0.9f;
+	bp1.ambient.b = 0.9f;
 	bp1.diffuse.r = 0.0f;
-	bp1.diffuse.g = 0.4f;
-	bp1.diffuse.b = 0.4f;
+	bp1.diffuse.g = 0.9f;
+	bp1.diffuse.b = 0.9f;
 	bp1.specular.r = 0.4f;
 	bp1.specular.g = 0.4f;
 	bp1.specular.b = 0.4f;
@@ -276,18 +279,18 @@ int main(int argc, char *argv[])
   Vertex v;
   v.x = 2.0f;
   v.y = 2.0f;
-  v.z = 5.0f;
+  v.z = 4.0f;
   
   Sphere *sphere = new Sphere(v, 0.75f);
   Phong bp2;
-  // rgb(127,0,255)
+  // rgb(127,0,255) purple
 
-  bp2.ambient.r = 0.498f;
-	bp2.ambient.g = 0.0f;
-	bp2.ambient.b = 1.0f;
-	bp2.diffuse.r = 0.498f;
+  bp2.ambient.r = 0.8f;
+	bp2.ambient.g = 0.8f;
+	bp2.ambient.b = 0.8f;
+	bp2.diffuse.r = 0.8f;
 	bp2.diffuse.g = 0.0f;
-	bp2.diffuse.b = 1.0f;
+	bp2.diffuse.b = 0.8f;
 	bp2.specular.r = 0.4f;
 	bp2.specular.g = 0.4f;
 	bp2.specular.b = 0.4f;
@@ -307,7 +310,7 @@ int main(int argc, char *argv[])
   Sphere *sphere2 = new Sphere(v2,0.5f);
 
   Phong bp3;
-  // rgb(255,128,0)
+  // rgb(255,128,0) orange
 
   bp3.ambient.r = 1.0f;
 	bp3.ambient.g = 0.502f;
@@ -359,9 +362,11 @@ int main(int argc, char *argv[])
       float depth;
 
       // reflection recursion depth
-      int d = 3;
+      int r_d = 3;
+      // transparency (refraction) recursion depth
+      int t_d = 10;
 
-      raytrace(ray, pm, dl, colour, depth, d);
+      raytrace(ray, pm, dl, colour, depth, r_d, t_d);
 
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
       //fb->plotDepth(x,y, depth);

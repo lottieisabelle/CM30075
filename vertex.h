@@ -37,4 +37,10 @@ public:
 		z = pz;
 		w = 1.0f;
 	}
+
+	Vector getDirection(Vertex b)
+	{
+		return Vector ((b.x - x),(b.y - y),(b.z-z));
+	}
+
 };
