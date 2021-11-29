@@ -1,3 +1,6 @@
+
+#pragma once
+
 #include "vertex.h"
 #include "vector.h"
 #include "object.h"

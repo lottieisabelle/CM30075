@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "vector.h"
+
 class Vertex {
 public:
 	float x;

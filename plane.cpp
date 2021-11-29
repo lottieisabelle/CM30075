@@ -9,6 +9,7 @@ Plane::Plane(Vertex p, Vector n)
 
 void Plane::intersection(Ray ray, Hit &hit)
 {
+	//printf("here");
     // ray is parallel to plane
     if(ray.direction.dot(normal) == 0){
       return;
@@ -24,6 +25,16 @@ void Plane::intersection(Ray ray, Hit &hit)
       return;
     } 
 
+	Vertex P (ray.position.x + ray.direction.x*d, ray.position.y + ray.direction.y*d, ray.position.z + ray.direction.z*d);
+	
+	if(d < hit.t){
+        hit.t = d;
+        hit.flag = true;
+        hit.normal = normal;
+        hit.position = P;
+		printf("yes ");
+		// return;
+    }
 
 
 

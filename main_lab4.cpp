@@ -11,7 +11,7 @@
  *
  * On linux.bath.ac.uk:
  *
- * Compile the code using g++ -o lab4executable main_lab4.cpp framebuffer.cpp polymesh.cpp sphere.cpp phong.cpp directional_light.cpp -lm
+ * Compile the code using g++ -o lab4executable main_lab4.cpp framebuffer.cpp polymesh.cpp sphere.cpp phong.cpp directional_light.cpp plane.cpp -lm
  *
  * Execute the code using ./lab4executable
  *
@@ -31,6 +31,7 @@
 #include "directional_light.h"
 #include "material.h"
 #include "phong.h"
+#include "plane.h"
 
 #include <iostream>
 #include <fstream>
@@ -53,6 +54,9 @@ void object_test(Ray ray, Object *objects, Hit &best_hit)
     obj_hit.flag=false;
 	  
     obj->intersection(ray, obj_hit);
+
+    
+    
 
     
     if (obj_hit.flag)
@@ -157,7 +161,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
     }
 
     // compute reflection ray if material supports it.
-    if(best_hit.what->material->k_reflection > 0.0f)
+    if(best_hit.what->material->bool_reflection)
     {
       Vector r_dir;
       best_hit.normal.reflection(ray.direction, r_dir);
@@ -186,7 +190,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
     }
 
     // compute refraction ray if material supports it.
-    if(best_hit.what->material->index_refraction > 0.0f)
+    if(best_hit.what->material->bool_refraction)
     {
       float ior = best_hit.what->material->index_refraction;
       // tray.dir = refraction(ray.dir, hit.normal, hit.ior);
@@ -214,6 +218,10 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       Ray T_ray (T_pos, T_dir);
 
       // col += hit.object.kt * raytrace(tray, depth-1);
+      //float x = best_hit.what->material->k_reflection;
+      //float kt = 1.0f - x;
+
+      //cout << kt << "\n";
       float kt = best_hit.what->material->k_refraction;
 
       Colour kt_col;
@@ -270,18 +278,20 @@ int main(int argc, char *argv[])
 
 	pm->material = &bp1;
 
+  pm->material->bool_reflection = false;
   pm->material->k_reflection = 0.4f;
-  // no refraction
+
+  pm->material->bool_refraction = false;
   pm->material->index_refraction = 0.0f;
   pm->material->k_refraction = 0.0f;
 
   // create spheres and material properties of spheres
   Vertex v;
-  v.x = 2.0f;
-  v.y = 2.0f;
-  v.z = 4.0f;
+  v.x = 0.0f; // 2
+  v.y = 0.1f; // 2
+  v.z = 1.5f; // 4
   
-  Sphere *sphere = new Sphere(v, 0.75f);
+  Sphere *sphere = new Sphere(v, 0.4);
   Phong bp2;
   // rgb(127,0,255) purple
 
@@ -289,7 +299,7 @@ int main(int argc, char *argv[])
 	bp2.ambient.g = 0.8f;
 	bp2.ambient.b = 0.8f;
 	bp2.diffuse.r = 0.8f;
-	bp2.diffuse.g = 0.0f;
+	bp2.diffuse.g = 0.8f;
 	bp2.diffuse.b = 0.8f;
 	bp2.specular.r = 0.4f;
 	bp2.specular.g = 0.4f;
@@ -298,8 +308,11 @@ int main(int argc, char *argv[])
 
 	sphere->material = &bp2;
 
-  sphere->material->k_reflection = 0.8f;
-  sphere->material->k_refraction = 0.8f;
+  sphere->material->bool_reflection = true;
+  sphere->material->k_reflection = 0.4f;
+
+  sphere->material->bool_refraction = true;
+  sphere->material->k_refraction = 0.6f;
   sphere->material->index_refraction = 1.33f; // water
 
   Vertex v2;
@@ -325,14 +338,40 @@ int main(int argc, char *argv[])
 
  	sphere2->material = &bp3;
 
+  sphere2->material->bool_reflection = true;
   sphere2->material->k_reflection = 0.8f;
+
+  sphere2->material->bool_refraction = false;
   sphere2->material->k_refraction = 0.8f;
-  // glass
-  sphere2->material->index_refraction = 1.52f;
+  sphere2->material->index_refraction = 1.52f; // glass
+
+  // plane
+  Vertex a (0, -2, 0);
+  Vertex b (0,2,0);
+  Vector plane_normal = a.getDirection(b);
+  Plane *floor = new Plane(a, plane_normal);
+
+  Phong bp4;
+  bp4.ambient.r = 0.5f;
+	bp4.ambient.g = 0.5f;
+	bp4.ambient.b = 0.5f;
+	bp4.diffuse.r = 0.5f;
+	bp4.diffuse.g = 0.5f;
+	bp4.diffuse.b = 0.5f;
+	bp4.specular.r = 0.2f;
+	bp4.specular.g = 0.2f;
+	bp4.specular.b = 0.2f;
+	bp4.power = 40.0f;
+
+  floor->material = &bp4;
+
+  floor->material->bool_reflection = false;
+  floor->material->bool_refraction = false;
     
   // link objects
   pm->next = sphere;
   sphere->next = sphere2;
+  sphere2->next = floor;
   
   // generate shooting ray from camera point
   Ray ray;
