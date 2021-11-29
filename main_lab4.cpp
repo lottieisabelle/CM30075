@@ -249,8 +249,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 256;
-  int height = 256;
+  int width = 100;
+  int height = 100;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -317,38 +317,55 @@ int main(int argc, char *argv[])
   sphere->material->index_refraction = 1.33f; // water
 
   Vertex v2;
-  v2.x = -1.0f;
-  v2.y = 1.0f;
+  v2.x = 2.0f;
+  v2.y = 0.5f;
   v2.z = 3.0f;
   
-  Sphere *sphere2 = new Sphere(v2,0.5f);
+  Sphere *sphere2 = new Sphere(v2,0.25f); // bubble above spout
 
   Phong bp3;
-  // rgb(255,128,0) orange
 
   bp3.ambient.r = 1.0f;
-	bp3.ambient.g = 0.502f;
-	bp3.ambient.b = 0.0f;
+	bp3.ambient.g = 1.0f;
+	bp3.ambient.b = 1.0f;
 	bp3.diffuse.r = 1.0f;
-	bp3.diffuse.g = 0.502f;
-	bp3.diffuse.b = 0.0f;
-	bp3.specular.r = 0.4f;
-	bp3.specular.g = 0.4f;
-	bp3.specular.b = 0.4f;
+	bp3.diffuse.g = 1.0f;
+	bp3.diffuse.b = 1.0f;
+	bp3.specular.r = 0.5f;
+	bp3.specular.g = 0.5f;
+	bp3.specular.b = 0.5f;
 	bp3.power = 40.0f;
 
  	sphere2->material = &bp3;
 
   sphere2->material->bool_reflection = true;
-  sphere2->material->k_reflection = 0.8f;
+  sphere2->material->k_reflection = 0.5f;
 
-  sphere2->material->bool_refraction = false;
-  sphere2->material->k_refraction = 0.8f;
-  sphere2->material->index_refraction = 1.52f; // glass
+  sphere2->material->bool_refraction = true;
+  sphere2->material->k_refraction = 0.5f;
+  sphere2->material->index_refraction = 1.52f; // glass 
+
+  Vertex v3;
+  v3.x = 1.80f;
+  v3.y = 1.5f;
+  v3.z = 3.0f;
+  
+  Sphere *sphere3 = new Sphere(v3,0.25f); // bubble above spout
+
+  sphere3->material = &bp3;
+
+  sphere3->material->bool_reflection = true;
+  sphere3->material->k_reflection = 0.5f;
+
+  sphere3->material->bool_refraction = true;
+  sphere3->material->k_refraction = 0.5f;
+  sphere3->material->index_refraction = 1.52f; // glass 
+
+
 
   // plane
   
-
+/*
   Vertex a (1, -3, 1);
   Vertex b (1,2,1);
   Vector plane_normal = a.getDirection(b);
@@ -356,12 +373,12 @@ int main(int argc, char *argv[])
   Plane *floor = new Plane(a, norm);
 
   Phong bp4;
-  bp4.ambient.r = 0.5f;
-	bp4.ambient.g = 0.5f;
-	bp4.ambient.b = 0.5f;
-	bp4.diffuse.r = 0.5f;
-	bp4.diffuse.g = 0.5f;
-	bp4.diffuse.b = 0.5f;
+  bp4.ambient.r = 1.0f;
+	bp4.ambient.g = 1.0f;
+	bp4.ambient.b = 1.0f;
+	bp4.diffuse.r = 1.0f;
+	bp4.diffuse.g = 1.0f;
+	bp4.diffuse.b = 1.0f;
 	bp4.specular.r = 0.2f;
 	bp4.specular.g = 0.2f;
 	bp4.specular.b = 0.2f;
@@ -377,7 +394,11 @@ int main(int argc, char *argv[])
   floor->material->index_refraction = 0.0f;
 
   //  Read in the floor polymesh model.
-  PolyMesh *floor_pm = new PolyMesh((char *)"floor.ply");
+  Transform *transform2 = new Transform(1.0f, 0.0f, 0.0f,  0.0f,
+				       0.0f, 1.0f, 0.0f, 0.0f,
+				       0.0f, 0.0f, 1.0f, 0.0f,
+				       0.0f, 0.0f, 0.0f, 1.0f);
+  PolyMesh *floor_pm = new PolyMesh((char *)"floor.ply", transform2);
   floor_pm->material = &bp4;
 
   floor_pm->material->bool_reflection = false;
@@ -386,11 +407,19 @@ int main(int argc, char *argv[])
   floor_pm->material->bool_refraction = false;
   floor_pm->material->k_refraction = 0.0f;
   floor_pm->material->index_refraction = 0.0f;
-    
+
   // link objects
   pm->next = sphere;
   sphere->next = sphere2;
   sphere2->next = floor_pm;
+  
+  */
+    
+  // link objects
+  pm->next = sphere;
+  sphere->next = sphere2;
+  sphere2->next = sphere3;
+
   
   // generate shooting ray from camera point
   Ray ray;

@@ -22,9 +22,9 @@ public:
 
 	virtual void compute_base_colour(Colour &result)
 	{
-		result.r = 0.5f;
-		result.g = 0.5f;
-		result.b = 0.5f;
+		result.r = 0.0f;
+		result.g = 0.0f;
+		result.b = 0.0f;
 	}
 	virtual void compute_light_colour(Vector &viewer, Vector &normal, Vector &ldir, Colour &result)
 	{
