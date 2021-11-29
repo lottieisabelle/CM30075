@@ -98,6 +98,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
   // if we found a primitive then compute the colour we should see
   if(best_hit.flag)
   {
+    
     best_hit.what->material->compute_base_colour(colour);
     depth = best_hit.t;
     Light *light = lights;
@@ -346,10 +347,13 @@ int main(int argc, char *argv[])
   sphere2->material->index_refraction = 1.52f; // glass
 
   // plane
-  Vertex a (0, -2, 0);
-  Vertex b (0,2,0);
+  
+
+  Vertex a (1, -3, 1);
+  Vertex b (1,2,1);
   Vector plane_normal = a.getDirection(b);
-  Plane *floor = new Plane(a, plane_normal);
+  Vector norm (0,1,0);
+  Plane *floor = new Plane(a, norm);
 
   Phong bp4;
   bp4.ambient.r = 0.5f;
@@ -366,12 +370,27 @@ int main(int argc, char *argv[])
   floor->material = &bp4;
 
   floor->material->bool_reflection = false;
+  floor->material->k_reflection = 0.0f;
+  
   floor->material->bool_refraction = false;
+  floor->material->k_refraction = 0.0f;
+  floor->material->index_refraction = 0.0f;
+
+  //  Read in the floor polymesh model.
+  PolyMesh *floor_pm = new PolyMesh((char *)"floor.ply");
+  floor_pm->material = &bp4;
+
+  floor_pm->material->bool_reflection = false;
+  floor_pm->material->k_reflection = 0.0f;
+  
+  floor_pm->material->bool_refraction = false;
+  floor_pm->material->k_refraction = 0.0f;
+  floor_pm->material->index_refraction = 0.0f;
     
   // link objects
   pm->next = sphere;
   sphere->next = sphere2;
-  sphere2->next = floor;
+  sphere2->next = floor_pm;
   
   // generate shooting ray from camera point
   Ray ray;

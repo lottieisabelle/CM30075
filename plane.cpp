@@ -32,7 +32,7 @@ void Plane::intersection(Ray ray, Hit &hit)
         hit.flag = true;
         hit.normal = normal;
         hit.position = P;
-		printf("yes ");
+		// printf("yes ");
 		// return;
     }
 
