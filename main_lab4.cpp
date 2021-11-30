@@ -249,8 +249,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 100;
-  int height = 100;
+  int width = 200;
+  int height = 200;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -265,7 +265,6 @@ int main(int argc, char *argv[])
 
   // create material properties for teapot
   Phong bp1;
-
 	bp1.ambient.r = 0.0f;
 	bp1.ambient.g = 0.9f;
 	bp1.ambient.b = 0.9f;
@@ -377,6 +376,33 @@ int main(int argc, char *argv[])
   ceiling_pm->material->bool_refraction = false;
   ceiling_pm->material->k_refraction = 0.0f;
   ceiling_pm->material->index_refraction = 0.0f;
+
+  // create bubbles
+  Vertex v;
+  v.x = 3.0f; 
+  v.y = 1.0f; 
+  v.z = 8.0f; 
+  
+  Sphere *sphere = new Sphere(v, 0.4);
+  Phong bp2;
+  bp2.ambient.r = 0.8f;
+	bp2.ambient.g = 0.8f;
+	bp2.ambient.b = 0.8f;
+	bp2.diffuse.r = 0.8f;
+	bp2.diffuse.g = 0.8f;
+	bp2.diffuse.b = 0.8f;
+	bp2.specular.r = 0.4f;
+	bp2.specular.g = 0.4f;
+	bp2.specular.b = 0.4f;
+	bp2.power = 40.0f;
+
+  sphere->material->bool_reflection = true;
+  sphere->material->k_reflection = 0.4f;
+
+  sphere->material->bool_refraction = true;
+  sphere->material->k_refraction = 0.6f;
+  sphere->material->index_refraction = 1.33f; // water
+
 
   // create spheres and material properties of spheres
   /*
@@ -495,6 +521,7 @@ int main(int argc, char *argv[])
   floor_pm->next = left_wall;
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
+  ceiling_pm->next = sphere;
   
   // generate shooting ray from camera point
   Ray ray;
