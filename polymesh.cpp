@@ -146,9 +146,10 @@ void PolyMesh::do_construct(char *file, Transform *transform)
     triangle_iss.str(line);
     
     triangle_iss >> count >> triangle[i][0] >> triangle[i][1] >> triangle[i][2];
-    /*    triangle[i][0] -= 1;
+    // comment out for smaller teapot
+    triangle[i][0] -= 1;
     triangle[i][1] -= 1;
-    triangle[i][2] -= 1;*/
+    triangle[i][2] -= 1;
 
     if (count != 3)
     {

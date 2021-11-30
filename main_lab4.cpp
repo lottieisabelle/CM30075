@@ -256,12 +256,12 @@ int main(int argc, char *argv[])
 
   // The following transform allows 4D homogeneous coordinates to be transformed. It moves the supplied teapot model to somewhere visible.
   Transform *transform = new Transform(1.0f, 0.0f, 0.0f,  0.0f,
-				       0.0f, 0.0f, 1.0f, -2.7f,
-				       0.0f, 1.0f, 0.0f, 5.0f,
+				       0.0f, 1.0f, 0.0f, -5.0f,
+				       0.0f, 0.0f, 1.0f, 8.0f,
 				       0.0f, 0.0f, 0.0f, 1.0f);
 
   //  Read in the teapot model.
-  PolyMesh *pm = new PolyMesh((char *)"teapot_smaller.ply", transform);
+  PolyMesh *pm = new PolyMesh((char *)"teapot.ply", transform);
 
   // create material properties for teapot
   Phong bp1;
@@ -286,7 +286,100 @@ int main(int argc, char *argv[])
   pm->material->index_refraction = 0.0f;
   pm->material->k_refraction = 0.0f;
 
+  // create box for teapot to sit in
+  Transform *transform2 = new Transform(1.0f, 0.0f, 0.0f,  0.0f,
+				       0.0f, 1.0f, 0.0f, 0.0f,
+				       0.0f, 0.0f, 1.0f, 0.0f,
+				       0.0f, 0.0f, 0.0f, 1.0f);
+  PolyMesh *background_pm = new PolyMesh((char *)"background.ply", transform2);
+  PolyMesh *floor_pm = new PolyMesh((char *)"floor.ply", transform2);
+  PolyMesh *left_wall = new PolyMesh((char *)"left_wall.ply", transform2);
+  PolyMesh *right_wall = new PolyMesh((char *)"right_wall.ply", transform2);
+  PolyMesh *ceiling_pm = new PolyMesh((char *)"ceiling.ply", transform2);
+
+  Phong bp4;
+  bp4.ambient.r = 1.0f;
+	bp4.ambient.g = 0.7f;
+	bp4.ambient.b = 1.0f;
+	bp4.diffuse.r = 1.0f;
+	bp4.diffuse.g = 0.7f;
+	bp4.diffuse.b = 1.0f;
+	bp4.specular.r = 0.2f;
+	bp4.specular.g = 0.2f;
+	bp4.specular.b = 0.2f;
+	bp4.power = 40.0f;
+
+  Phong bp5;
+  bp5.ambient.r = 0.5f;
+	bp5.ambient.g = 0.0f;
+	bp5.ambient.b = 1.0f;
+	bp5.diffuse.r = 0.5f;
+	bp5.diffuse.g = 0.0f;
+	bp5.diffuse.b = 1.0f;
+	bp5.specular.r = 0.2f;
+	bp5.specular.g = 0.2f;
+	bp5.specular.b = 0.2f;
+	bp5.power = 40.0f;
+
+  Phong bp6;
+  bp6.ambient.r = 1.0f;
+	bp6.ambient.g = 0.5f;
+	bp6.ambient.b = 0.0f;
+	bp6.diffuse.r = 1.0f;
+	bp6.diffuse.g = 0.5f;
+	bp6.diffuse.b = 0.0f;
+	bp6.specular.r = 0.2f;
+	bp6.specular.g = 0.2f;
+	bp6.specular.b = 0.2f;
+	bp6.power = 40.0f;
+
+  // back wall
+  background_pm->material = &bp6;
+  background_pm->material->bool_reflection = false;
+  background_pm->material->k_reflection = 0.0f;
+  
+  background_pm->material->bool_refraction = false;
+  background_pm->material->k_refraction = 0.0f;
+  background_pm->material->index_refraction = 0.0f;
+
+  // floor
+  floor_pm->material = &bp4;
+  floor_pm->material->bool_reflection = false;
+  floor_pm->material->k_reflection = 0.0f;
+  
+  floor_pm->material->bool_refraction = false;
+  floor_pm->material->k_refraction = 0.0f;
+  floor_pm->material->index_refraction = 0.0f;
+
+  // left wall
+  left_wall->material = &bp5;
+  left_wall->material->bool_reflection = false;
+  left_wall->material->k_reflection = 0.0f;
+  
+  left_wall->material->bool_refraction = false;
+  left_wall->material->k_refraction = 0.0f;
+  left_wall->material->index_refraction = 0.0f;
+
+  // right wall
+  right_wall->material = &bp5;
+  right_wall->material->bool_reflection = false;
+  right_wall->material->k_reflection = 0.0f;
+  
+  right_wall->material->bool_refraction = false;
+  right_wall->material->k_refraction = 0.0f;
+  right_wall->material->index_refraction = 0.0f;
+
+  // ceiling
+  ceiling_pm->material = &bp4;
+  ceiling_pm->material->bool_reflection = false;
+  ceiling_pm->material->k_reflection = 0.0f;
+  
+  ceiling_pm->material->bool_refraction = false;
+  ceiling_pm->material->k_refraction = 0.0f;
+  ceiling_pm->material->index_refraction = 0.0f;
+
   // create spheres and material properties of spheres
+  /*
   Vertex v;
   v.x = 0.0f; // 2
   v.y = 0.1f; // 2
@@ -315,7 +408,8 @@ int main(int argc, char *argv[])
   sphere->material->bool_refraction = true;
   sphere->material->k_refraction = 0.6f;
   sphere->material->index_refraction = 1.33f; // water
-
+*/
+/*
   Vertex v2;
   v2.x = 2.0f;
   v2.y = 0.5f;
@@ -362,7 +456,7 @@ int main(int argc, char *argv[])
   sphere3->material->index_refraction = 1.52f; // glass 
 
 
-
+*/
   // plane
   
 /*
@@ -371,19 +465,9 @@ int main(int argc, char *argv[])
   Vector plane_normal = a.getDirection(b);
   Vector norm (0,1,0);
   Plane *floor = new Plane(a, norm);
-
-  Phong bp4;
-  bp4.ambient.r = 1.0f;
-	bp4.ambient.g = 1.0f;
-	bp4.ambient.b = 1.0f;
-	bp4.diffuse.r = 1.0f;
-	bp4.diffuse.g = 1.0f;
-	bp4.diffuse.b = 1.0f;
-	bp4.specular.r = 0.2f;
-	bp4.specular.g = 0.2f;
-	bp4.specular.b = 0.2f;
-	bp4.power = 40.0f;
-
+*/
+  
+/*
   floor->material = &bp4;
 
   floor->material->bool_reflection = false;
@@ -392,34 +476,25 @@ int main(int argc, char *argv[])
   floor->material->bool_refraction = false;
   floor->material->k_refraction = 0.0f;
   floor->material->index_refraction = 0.0f;
-
-  //  Read in the floor polymesh model.
-  Transform *transform2 = new Transform(1.0f, 0.0f, 0.0f,  0.0f,
-				       0.0f, 1.0f, 0.0f, 0.0f,
-				       0.0f, 0.0f, 1.0f, 0.0f,
-				       0.0f, 0.0f, 0.0f, 1.0f);
-  PolyMesh *floor_pm = new PolyMesh((char *)"floor.ply", transform2);
-  floor_pm->material = &bp4;
-
-  floor_pm->material->bool_reflection = false;
-  floor_pm->material->k_reflection = 0.0f;
-  
-  floor_pm->material->bool_refraction = false;
-  floor_pm->material->k_refraction = 0.0f;
-  floor_pm->material->index_refraction = 0.0f;
-
-  // link objects
-  pm->next = sphere;
-  sphere->next = sphere2;
-  sphere2->next = floor_pm;
-  
   */
-    
-  // link objects
-  pm->next = sphere;
-  sphere->next = sphere2;
-  sphere2->next = sphere3;
 
+  // link objects
+ // pm->next = sphere;
+  //sphere->next = sphere2;
+  //sphere2->next = sphere3;
+  
+
+  // link objects
+  //pm->next = sphere2;
+  //sphere->next = sphere2;
+  //sphere2->next = floor_pm;
+  
+  // link objects
+  pm->next = background_pm;
+  background_pm->next = floor_pm;
+  floor_pm->next = left_wall;
+  left_wall->next = right_wall;
+  right_wall->next = ceiling_pm;
   
   // generate shooting ray from camera point
   Ray ray;
