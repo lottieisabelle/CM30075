@@ -249,8 +249,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 200;
-  int height = 200;
+  int width = 1000;
+  int height = 1000;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -380,80 +380,46 @@ int main(int argc, char *argv[])
   // create bubbles
   Vertex v;
   v.x = 3.0f; 
-  v.y = 1.0f; 
+  v.y = -1.0f; 
   v.z = 8.0f; 
   
   Sphere *sphere = new Sphere(v, 0.4);
   Phong bp2;
-  bp2.ambient.r = 0.8f;
-	bp2.ambient.g = 0.8f;
-	bp2.ambient.b = 0.8f;
-	bp2.diffuse.r = 0.8f;
-	bp2.diffuse.g = 0.8f;
-	bp2.diffuse.b = 0.8f;
+  bp2.ambient.r = 0.6f;
+	bp2.ambient.g = 0.6f;
+	bp2.ambient.b = 0.6f;
+	bp2.diffuse.r = 0.6f;
+	bp2.diffuse.g = 0.6f;
+	bp2.diffuse.b = 0.6f;
 	bp2.specular.r = 0.4f;
 	bp2.specular.g = 0.4f;
 	bp2.specular.b = 0.4f;
 	bp2.power = 40.0f;
 
+  sphere->material = &bp2;
   sphere->material->bool_reflection = true;
-  sphere->material->k_reflection = 0.4f;
+  sphere->material->k_reflection = 0.5f;
 
   sphere->material->bool_refraction = true;
-  sphere->material->k_refraction = 0.6f;
+  sphere->material->k_refraction = 0.5f;
   sphere->material->index_refraction = 1.33f; // water
 
-
-  // create spheres and material properties of spheres
-  /*
-  Vertex v;
-  v.x = 0.0f; // 2
-  v.y = 0.1f; // 2
-  v.z = 1.5f; // 4
-  
-  Sphere *sphere = new Sphere(v, 0.4);
-  Phong bp2;
-  // rgb(127,0,255) purple
-
-  bp2.ambient.r = 0.8f;
-	bp2.ambient.g = 0.8f;
-	bp2.ambient.b = 0.8f;
-	bp2.diffuse.r = 0.8f;
-	bp2.diffuse.g = 0.8f;
-	bp2.diffuse.b = 0.8f;
-	bp2.specular.r = 0.4f;
-	bp2.specular.g = 0.4f;
-	bp2.specular.b = 0.4f;
-	bp2.power = 40.0f;
-
-	sphere->material = &bp2;
-
-  sphere->material->bool_reflection = true;
-  sphere->material->k_reflection = 0.4f;
-
-  sphere->material->bool_refraction = true;
-  sphere->material->k_refraction = 0.6f;
-  sphere->material->index_refraction = 1.33f; // water
-*/
-/*
   Vertex v2;
   v2.x = 2.0f;
-  v2.y = 0.5f;
-  v2.z = 3.0f;
+  v2.y = 1.0f;
+  v2.z = 8.0f;
   
-  Sphere *sphere2 = new Sphere(v2,0.25f); // bubble above spout
-
+  Sphere *sphere2 = new Sphere(v2,0.6f);
   Phong bp3;
-
-  bp3.ambient.r = 1.0f;
-	bp3.ambient.g = 1.0f;
-	bp3.ambient.b = 1.0f;
-	bp3.diffuse.r = 1.0f;
-	bp3.diffuse.g = 1.0f;
-	bp3.diffuse.b = 1.0f;
-	bp3.specular.r = 0.5f;
-	bp3.specular.g = 0.5f;
-	bp3.specular.b = 0.5f;
+  bp3.ambient.r = 0.6f;
+	bp3.ambient.g = 0.6f;
+	bp3.ambient.b = 0.6f;
+	bp3.diffuse.r = 0.6f;
+	bp3.diffuse.g = 0.6f;
+	bp3.diffuse.b = 0.6f;
+	bp3.specular.r = 0.4f;
+	bp3.specular.g = 0.4f;
+	bp3.specular.b = 0.4f;
 	bp3.power = 40.0f;
 
  	sphere2->material = &bp3;
@@ -463,8 +429,9 @@ int main(int argc, char *argv[])
 
   sphere2->material->bool_refraction = true;
   sphere2->material->k_refraction = 0.5f;
-  sphere2->material->index_refraction = 1.52f; // glass 
+  sphere2->material->index_refraction = 1.33f; // water 
 
+/*
   Vertex v3;
   v3.x = 1.80f;
   v3.y = 1.5f;
@@ -522,6 +489,7 @@ int main(int argc, char *argv[])
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
   ceiling_pm->next = sphere;
+  sphere->next = sphere2;
   
   // generate shooting ray from camera point
   Ray ray;
