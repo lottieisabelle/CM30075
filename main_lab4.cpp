@@ -32,6 +32,7 @@
 #include "material.h"
 #include "phong.h"
 #include "plane.h"
+#include "photon.h"
 
 #include <iostream>
 #include <fstream>
@@ -430,57 +431,6 @@ int main(int argc, char *argv[])
   sphere2->material->bool_refraction = true;
   sphere2->material->k_refraction = 0.5f;
   sphere2->material->index_refraction = 1.33f; // water 
-
-/*
-  Vertex v3;
-  v3.x = 1.80f;
-  v3.y = 1.5f;
-  v3.z = 3.0f;
-  
-  Sphere *sphere3 = new Sphere(v3,0.25f); // bubble above spout
-
-  sphere3->material = &bp3;
-
-  sphere3->material->bool_reflection = true;
-  sphere3->material->k_reflection = 0.5f;
-
-  sphere3->material->bool_refraction = true;
-  sphere3->material->k_refraction = 0.5f;
-  sphere3->material->index_refraction = 1.52f; // glass 
-
-
-*/
-  // plane
-  
-/*
-  Vertex a (1, -3, 1);
-  Vertex b (1,2,1);
-  Vector plane_normal = a.getDirection(b);
-  Vector norm (0,1,0);
-  Plane *floor = new Plane(a, norm);
-*/
-  
-/*
-  floor->material = &bp4;
-
-  floor->material->bool_reflection = false;
-  floor->material->k_reflection = 0.0f;
-  
-  floor->material->bool_refraction = false;
-  floor->material->k_refraction = 0.0f;
-  floor->material->index_refraction = 0.0f;
-  */
-
-  // link objects
- // pm->next = sphere;
-  //sphere->next = sphere2;
-  //sphere2->next = sphere3;
-  
-
-  // link objects
-  //pm->next = sphere2;
-  //sphere->next = sphere2;
-  //sphere2->next = floor_pm;
   
   // link objects
   pm->next = background_pm;
@@ -500,6 +450,21 @@ int main(int argc, char *argv[])
 
   // create directional light
   DirectionalLight *dl = new DirectionalLight(Vector(1.01f, -1.0f, 1.0f),Colour(1.0f, 1.0f, 1.0f, 0.0f));
+
+  // photon mapping goes here
+
+  
+  int n = 200; // number of photons
+
+  // for n photons
+
+  // create photon
+  Photon p1;
+
+  // send out into picture, meaning give direction vector
+  // determine hit point (use intersection?)
+
+
 
   for (int y = 0; y < height; y += 1)
   {
