@@ -33,12 +33,14 @@
 #include "phong.h"
 #include "plane.h"
 #include "photon.h"
+#include "point_light.h"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <math.h>
+#include <random>
 
 using namespace std;
 
@@ -55,10 +57,6 @@ void object_test(Ray ray, Object *objects, Hit &best_hit)
     obj_hit.flag=false;
 	  
     obj->intersection(ray, obj_hit);
-
-    
-    
-
     
     if (obj_hit.flag)
     {
@@ -250,8 +248,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 1000;
-  int height = 1000;
+  int width = 100;
+  int height = 100;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -449,20 +447,46 @@ int main(int argc, char *argv[])
   ray.position.z = 0.0f;
 
   // create directional light
-  DirectionalLight *dl = new DirectionalLight(Vector(1.01f, -1.0f, 1.0f),Colour(1.0f, 1.0f, 1.0f, 0.0f));
+  DirectionalLight *dl = new DirectionalLight(Vector(0.5f, -0.2f, 1.0f),Colour(1.0f, 1.0f, 1.0f, 0.0f));
+  // an approximation that simulates the sun
+  // x how much pointing left and right
+  // y how much up or down
+  // z into and out of the scene, more extemely into the scene = more positive
 
-  // photon mapping goes here
+  PointLight *pl = new PointLight(Vertex(-0.5f,0.2f,-1.0f), Colour(1.0f,1.0f,1.0f,0.0f));
 
+
+  // photon mapping here
+
+  // random number generator set up code, for random direction vectors
+  random_device rd;
+  mt19937 mt(rd());
+  uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) TODO define range
   
-  int n = 200; // number of photons
+  int n = 10; // number of photons TODO set number
 
   // for n photons
+  for (int i=0; i<n; ++i){
+    // create photon
+    Photon p;
 
-  // create photon
-  Photon p1;
+    // send out into picture, meaning give photon direction vector
+    // create random direction vectors all across image
 
-  // send out into picture, meaning give direction vector
-  // determine hit point (use intersection?)
+    float p_x = dist(mt);
+    float p_y = dist(mt);
+    float p_z = dist(mt);
+
+    p.set_dir(Vector(p_x, p_y, p_z));
+    //printf("%f , %f , %f\n",p_x, p_y, p_z);
+
+    // determine hit point (use intersection?) basically like raytrace?
+
+
+    // store hit position, type of photon (d/i/s), intensity of photon? in photon object in kdtree
+
+  } 
+
 
 
 
@@ -488,7 +512,7 @@ int main(int argc, char *argv[])
       // transparency (refraction) recursion depth
       int t_d = 10;
 
-      raytrace(ray, pm, dl, colour, depth, r_d, t_d);
+      raytrace(ray, pm, pl, colour, depth, r_d, t_d);
 
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
       //fb->plotDepth(x,y, depth);

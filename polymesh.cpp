@@ -338,7 +338,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
     {
       if (hit.flag == false)
       {
-	hit = current_hit;
+	      hit = current_hit;
 
       } else if (current_hit.t < hit.t)
       {
