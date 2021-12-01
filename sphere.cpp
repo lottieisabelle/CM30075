@@ -35,7 +35,7 @@ void Sphere::intersection(Ray ray, Hit &hit)
 
 	float disc = b*b - 4 * a*c;
 
-	if (disc < 0.0)
+	if (disc < 0.0f)
 	{
 		return; // a negative value indicates no intersection.
 	}
@@ -46,9 +46,9 @@ void Sphere::intersection(Ray ray, Hit &hit)
 	float t0 = (-b - ds) / 2.0f;
 	float t1 = (-b + ds) / 2.0f;
 
-	if (t1 < 0.0)
+	if (t1 < 0.0f)
 	{
-		return;
+	  return;
 	}
 
 	// if an intersection has been found, record details in hit object
@@ -58,7 +58,6 @@ void Sphere::intersection(Ray ray, Hit &hit)
 	if (t0 > 0.0) //smallest root is positive.
 	{
 		hit.t = t0;
-
 		hit.position.x = ray.position.x + t0 * ray.direction.x;
 		hit.position.y = ray.position.y + t0 * ray.direction.y;
 		hit.position.z = ray.position.z + t0 * ray.direction.z;
@@ -67,12 +66,10 @@ void Sphere::intersection(Ray ray, Hit &hit)
 		hit.normal.z = hit.position.z - center.z;
 		hit.normal.normalise();
 		hit.flag = true;
-
 		return;
 	}
 
 	hit.t = t1;
-
 	hit.position.x = ray.position.x + t1 * ray.direction.x;
 	hit.position.y = ray.position.y + t1 * ray.direction.y;
 	hit.position.z = ray.position.z + t1 * ray.direction.z;
@@ -81,6 +78,5 @@ void Sphere::intersection(Ray ray, Hit &hit)
 	hit.normal.z = hit.position.z - center.z;
 	hit.normal.normalise();
 	hit.flag = true;
-
 	return;
 }

@@ -9,41 +9,27 @@
 
 #include "vertex.h"
 #include "transform.h"
-#include <math.h>
-
-#include "ray.h"
-#include "hit.h"
-
-#include "lighting.h"
+#include "object.h"
 
 typedef int TriangleIndex[3];
 
-class PolyMesh {
+class PolyMesh:public Object{
 public:
 	int vertex_count;
 	int triangle_count;
-    Vertex *vertex;
+        Vertex *vertex;
+	Vector *face_normal;
+	Vector *vertex_normal;
 	TriangleIndex *triangle;
 
-	// coefficients
-	float *ambient;
-    float *diffuse;
-	float *specular;
-
-	void do_construct(char *file, Transform *transform, int x);
-
-	Vector getDirection(Vertex a, Vertex b);
-
+	void do_construct(char *file, Transform *transform);
+	float test_edge(Vector &normal, Vertex &p, Vertex &v1, Vertex &v0);
+	void triangle_intersection(Ray ray, Hit &hit, int which_triangle);
 	void intersection(Ray ray, Hit &hit);
-
-	float* colour_hit(Hit &hit);
-
-	float* colour_no_hit(Ray ray);
-
-	float* calculate_lighting(Hit &hit, Lighting light, int flag);
-
-	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb);
-	
-	PolyMesh(char *file, int x);
-	PolyMesh(char *file, Transform *transform, int x);
+	void compute_face_normal(int which_triangle, Vector &normal);
+	void compute_vertex_normals(void);
+	bool rayTriangleIntersect(const Ray& ray, const Vector &v0, const Vector &v1, const Vector &v2, float &t);
+        PolyMesh(char *file);
+	PolyMesh(char *file, Transform *transform);
+	~PolyMesh(){}
 };

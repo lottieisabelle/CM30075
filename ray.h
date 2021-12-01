@@ -9,6 +9,9 @@
 
 #pragma once
 
+#include <iostream>
+using namespace std;
+
 #include "vertex.h"
 #include "vector.h"
 
@@ -21,9 +24,17 @@ public:
 	{
 	}
 
+	
+
 	Ray(Vertex p, Vector d)
 	{
 		position = p;
 		direction = d;
+	}
+
+	friend ostream& operator<<(ostream& os, const Ray& r)
+	{
+	  os << "Ray{[" << r.position.x << "," << r.position.y << "," << r.position.z << "],[" << r.direction.x << "," << r.direction.y << "," << r.direction.z << "]}\n"; 
+          return os;
 	}
 };

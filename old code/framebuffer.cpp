@@ -5,7 +5,6 @@
  * Do what you like with this code as long as you retain this comment.
  */
 
-#include <stdlib.h>
 #include <float.h>
 #include <iostream>
 #include <fstream>
@@ -48,7 +47,7 @@ int FrameBuffer::plotPixel(int x, int y, float red, float green, float blue)
     return -1;
   }
 
-  //  if ((red > 1.0f) || (red < 0.0f)) cerr<<"out of range\n";
+  if ((red > 1.0f) || (red < 0.0f)) cerr<<"out of range\n";
   
   this->framebuffer[y * this->width + x].red = red;
   this->framebuffer[y * this->width + x].green = green;
@@ -97,7 +96,6 @@ int FrameBuffer::getPixel(int x, int y, float &red, float &green, float &blue)
 
 int FrameBuffer::writeRGBFile(char *filename)
 {
-  float min = 0.0f;
   float max = 0.0f;
 
   ofstream outfile;
@@ -114,22 +112,18 @@ int FrameBuffer::writeRGBFile(char *filename)
     if (this->framebuffer[i].red > max) max = this->framebuffer[i].red;
     if (this->framebuffer[i].green > max) max = this->framebuffer[i].green;
     if (this->framebuffer[i].blue > max) max = this->framebuffer[i].blue;
-    if (this->framebuffer[i].red < min) min = this->framebuffer[i].red;
-    if (this->framebuffer[i].green < min) min = this->framebuffer[i].green;
-    if (this->framebuffer[i].blue < min) min = this->framebuffer[i].blue;
   }
 
-  float diff = max - min;
-  if (diff == 0.0f) diff = 1.0f;
+  if (max == 0.0f) max = 1.0f;
 
   outfile << "P6\n";
   outfile << this->width << " " << this->height << "\n255\n";
 
   for (int j = 0; j<  this->width*this->height; j += 1)
   {
-    outfile << (unsigned char)(((this->framebuffer[j].red-min)/diff)*255.0);
-    outfile << (unsigned char)(((this->framebuffer[j].green)/diff)*255.0);
-    outfile << (unsigned char)(((this->framebuffer[j].blue)/diff)*255.0);
+    outfile << (unsigned char)((this->framebuffer[j].red/max)*255.0);
+    outfile << (unsigned char)((this->framebuffer[j].green/max)*255.0);
+    outfile << (unsigned char)((this->framebuffer[j].blue/max)*255.0);
   }
   
   outfile.close();
@@ -138,7 +132,7 @@ int FrameBuffer::writeRGBFile(char *filename)
 
 int FrameBuffer::writeDepthFile(char *filename)
 {
-  float max = 0;
+  float max = 0.0f;
   float min = FLT_MAX;
 
   ofstream outfile;
@@ -156,10 +150,12 @@ int FrameBuffer::writeDepthFile(char *filename)
     if (this->framebuffer[i].depth < min) min = this->framebuffer[i].depth;
   }
 
+  cerr << "Min/max" << min << "/" << max << endl;
+
   float diff = max - min;
   if (diff == 0.0f) diff = 1.0f;
 
-  //  cerr << "Min/max/diff" << min << "/" << max << "/" << diff << endl;
+  cerr << "Min/max/diff" << min << "/" << max << "/" << diff << endl;
 
   outfile << "P6\n";
   outfile << this->width << " " << this->height << "\n255\n";
