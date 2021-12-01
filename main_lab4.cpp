@@ -160,6 +160,53 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       light = light->next;
     }
 
+    if(best_hit.what->material->bool_reflection || best_hit.what->material->bool_refraction){
+      // do fresnell equation
+
+      // TODO : improve to track whether ray is entering or leaving object to determine ior value
+      float ior = best_hit.what->material->index_refraction;
+
+      float cos_i = best_hit.normal.dot(ray.direction);
+      //printf("%f \n", cos_i);
+
+      // if cos_i > 0 then you know that the ray is exiting the object therefore swap the ior component
+      // ior component of object e.g. glass or water, and ior component air
+
+      if(cos_i > 1){
+        cos_i = 1;
+      }
+
+      if(cos_i < -1){
+        cos_i = -1;
+      }
+
+      float n2 = ior*ior;
+      float cos_i2 = cos_i*cos_i;
+
+      float sin_t = sqrt(1 - cos_i2);
+      if (sin_t >= 1){
+        float kr = 1;
+      }
+
+      float val = 1 - (1/n2) * (1 - cos_i2);
+
+      // if (sin t = 1 - cos_i2) >= 1 then kr = 1, kt = 0
+      // otherwise
+      
+      float cos_t = sqrt(val);
+
+      float r_par = ((ior * cos_i) - cos_t) / ((ior * cos_i) + cos_t);
+      float r_per = (cos_i - (ior * cos_t)) / (cos_i + (ior * cos_t));
+
+      float kr = 0.5 * (r_par*r_par + r_per*r_per);
+      float kt = 1 - kr;
+
+      printf("%f , %f \n", kr, kt);
+
+      best_hit.what->material->k_reflection = kr;
+      best_hit.what->material->k_refraction = kt;
+    }
+
     // compute reflection ray if material supports it.
     if(best_hit.what->material->bool_reflection)
     {
@@ -203,8 +250,13 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       // cos θt = sqrt(1 – (1/η2) * (1 - cos2 θi) )
       float n2 = ior*ior;
       float cos_i2 = cos_i*cos_i;
+      float val = 1 - (1/n2) * (1 - cos_i2);
 
-      float cos_t = sqrt(1 - (1/n2) * (1 - cos_i2) );
+      if (val < 0) {
+        return;
+      }
+
+      float cos_t = sqrt(val);
 
       // T = 1/η * I – (cos θt – (1/η)* cos θi ) * N
       Vector T_dir = 1/ior * ray.direction - (cos_t - (1/ior) * cos_i) * best_hit.normal;
@@ -217,11 +269,6 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       
       Ray T_ray (T_pos, T_dir);
 
-      // col += hit.object.kt * raytrace(tray, depth-1);
-      //float x = best_hit.what->material->k_reflection;
-      //float kt = 1.0f - x;
-
-      //cout << kt << "\n";
       float kt = best_hit.what->material->k_refraction;
 
       Colour kt_col;
