@@ -248,8 +248,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 100;
-  int height = 100;
+  int width = 256;
+  int height = 256;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
   // y how much up or down
   // z into and out of the scene, more extemely into the scene = more positive
 
-  PointLight *pl = new PointLight(Vertex(-0.5f,0.2f,-1.0f), Colour(1.0f,1.0f,1.0f,0.0f));
+  PointLight *pl = new PointLight(Vertex(-5.0f,2.0f,-10.0f), Colour(1.0f,1.0f,1.0f,0.0f));
 
 
   // photon mapping here
@@ -512,6 +512,7 @@ int main(int argc, char *argv[])
       // transparency (refraction) recursion depth
       int t_d = 10;
 
+      // uses point light pl, change to dl to use directional light
       raytrace(ray, pm, pl, colour, depth, r_d, t_d);
 
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
