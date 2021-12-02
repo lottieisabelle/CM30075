@@ -91,105 +91,7 @@ float fresnel(Ray ray, Hit &best_hit){
   kr = (fr_1*fr_1 + fr_2*fr_2) /2;
 
   return kr;
-
-  /*
-
-
-
-  float n = n_in/n_out;
-  best_hit.what->material->index_refraction = n;
-
-  float n2 = n*n;
-  float cos_i2 = cos_i*cos_i;
-  float cos_t2 = 1 - ((1/n2) * (1-cos_i2));
-
-  // if cannot be sqrted - total internal reflection
-  if (cos_t2 < 0){
-    kr = 1.0;
-    return kr;
-  } 
-
-  float cos_t = sqrt(cos_t2);
-  clamp(cos_t); // limit between -1 and 1
-
-  //printf("cos i : %f , ", cos_i);
-  //printf("cos t : %f , ", cos_t);
-  //printf("n_in : %f , ", n_in);
-  //printf("n_out : %f\n\n", n_out);
-
-
-
-  float FR1 = ((n_out*cos_i)-(n_in*cos_t)) / ((n_out*cos_i)+(n_in*cos_t));
-  float FR12 = FR1*FR1;
-  float FR2 = ((n_in*cos_t)-(n_out*cos_i)) / ((n_in*cos_t)+(n_out*cos_i));
-  float FR22 = FR2*FR2;
-  
-
-  kr = 0.5 * (FR12+FR22);
-
-  return kr;*/
-
-      
-      //float kt;
-
-      //float sin_t = sqrt(1 - cos_t2);
-      //if (sin_t >= 1){
-        //kr = 1.0;
-      //} else {  
-        // trying swapping n_in and n_out - made it very dark
-        /*
-        float FR1 = ((n_in*cos_i)-(n_out*cos_t)) / ((n_in*cos_i)+(n_out*cos_t));
-        float FR12 = FR1*FR1;
-        float FR2 = ((n_out*cos_t)-(n_in*cos_i)) / ((n_out*cos_t)+(n_in*cos_i));
-        float FR22 = FR2*FR2;
-        */
-        
-        
-
-        //float r_par = ((n_out * cos_i) - (n_in * cos_t)) / ((n_out * cos_i) + (n_in * cos_t));
-        //float r_per = ((cos_i - (n * cos_t)) / (cos_i + (n * cos_t)));
-        //kr = 0.5 * (r_par*r_par + r_per*r_per);
-      //}
-
-      //kt = 1.0 - kr;
-
-      //printf("%f , %f \n", kr, kt);
-
-      //best_hit.what->material->k_reflection = kr;
-      //best_hit.what->material->k_refraction = kt;
-
-      // get angle between incoming ray and the normal to the plane
-      // if the angle is greater than 90 degrees then you know 
-      
-    
-
-      //printf("%f \n", cos_i);
-
-      // if cos_i > 0 then you know that the ray is exiting the object therefore swap the ior component
-      // ior component of object e.g. glass or water, and ior component air
-
-      /*
-
-      
-      float cos_i2 = 
-
-      float sin_t = sqrt(1 - cos_i2);
-      
-
-      float val = 1 - (1/n2) * (1 - cos_i2);
-
-      // if (sin t = 1 - cos_i2) >= 1 then kr = 1, kt = 0
-      // otherwise
-      
-      float cos_t = sqrt(val);
-
-      */
-  //kr = 0.0;
-
-  //return kr;
 }
-
-
 
 void object_test(Ray ray, Object *objects, Hit &best_hit)
 {
@@ -364,11 +266,6 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       float n2 = n*n;
       float cos_i2 = cos_i*cos_i;
       float cos_t2 = 1 - (1/n2) * (1 - cos_i2);
-
-      if (cos_t2 < 0) {
-        // not sure what to do here?
-        return;
-      }
 
       float cos_t = sqrt(cos_t2);
       clamp(cos_t);
