@@ -52,6 +52,145 @@ void clamp(float &x){
   } 
 }
 
+float fresnel(Ray ray, Hit &best_hit){
+  // kr to be returned from this function
+  float kr;
+
+  // calculate cos of angle between incident ray and normal to surface
+  float cos_i = best_hit.normal.dot(ray.direction);
+  clamp(cos_i); // limit between -1 and 1
+
+  float n_out;
+  float n_in;
+
+  // assume
+  n_out = best_hit.what->material->ior_surround;
+  n_in = best_hit.what->material->ior_object;
+
+  // unless
+  if (cos_i < 0){
+    n_out = best_hit.what->material->ior_object;
+    n_in = best_hit.what->material->ior_surround;
+  }
+
+  float n = n_in/n_out;
+  best_hit.what->material->index_refraction = n;
+
+  float sin_t = n_out / n_in * sqrtf(std::max(0.f, 1-cos_i *cos_i));
+  if (sin_t >= 1){
+    // total internal reflection
+    kr = 1;
+    return kr;
+  }
+
+  float cos_t = sqrtf(std::max(0.0f, 1 - sin_t *sin_t));
+  cos_i = fabsf(cos_i);
+
+  float fr_1 = ((n_in*cos_i)-(n_out*cos_t)) / ((n_in*cos_i)+(n_out*cos_t));
+  float fr_2 = ((n_out*cos_i)-(n_in*cos_t)) / ((n_out*cos_i)+(n_in*cos_t));
+  kr = (fr_1*fr_1 + fr_2*fr_2) /2;
+
+  return kr;
+
+  /*
+
+
+
+  float n = n_in/n_out;
+  best_hit.what->material->index_refraction = n;
+
+  float n2 = n*n;
+  float cos_i2 = cos_i*cos_i;
+  float cos_t2 = 1 - ((1/n2) * (1-cos_i2));
+
+  // if cannot be sqrted - total internal reflection
+  if (cos_t2 < 0){
+    kr = 1.0;
+    return kr;
+  } 
+
+  float cos_t = sqrt(cos_t2);
+  clamp(cos_t); // limit between -1 and 1
+
+  //printf("cos i : %f , ", cos_i);
+  //printf("cos t : %f , ", cos_t);
+  //printf("n_in : %f , ", n_in);
+  //printf("n_out : %f\n\n", n_out);
+
+
+
+  float FR1 = ((n_out*cos_i)-(n_in*cos_t)) / ((n_out*cos_i)+(n_in*cos_t));
+  float FR12 = FR1*FR1;
+  float FR2 = ((n_in*cos_t)-(n_out*cos_i)) / ((n_in*cos_t)+(n_out*cos_i));
+  float FR22 = FR2*FR2;
+  
+
+  kr = 0.5 * (FR12+FR22);
+
+  return kr;*/
+
+      
+      //float kt;
+
+      //float sin_t = sqrt(1 - cos_t2);
+      //if (sin_t >= 1){
+        //kr = 1.0;
+      //} else {  
+        // trying swapping n_in and n_out - made it very dark
+        /*
+        float FR1 = ((n_in*cos_i)-(n_out*cos_t)) / ((n_in*cos_i)+(n_out*cos_t));
+        float FR12 = FR1*FR1;
+        float FR2 = ((n_out*cos_t)-(n_in*cos_i)) / ((n_out*cos_t)+(n_in*cos_i));
+        float FR22 = FR2*FR2;
+        */
+        
+        
+
+        //float r_par = ((n_out * cos_i) - (n_in * cos_t)) / ((n_out * cos_i) + (n_in * cos_t));
+        //float r_per = ((cos_i - (n * cos_t)) / (cos_i + (n * cos_t)));
+        //kr = 0.5 * (r_par*r_par + r_per*r_per);
+      //}
+
+      //kt = 1.0 - kr;
+
+      //printf("%f , %f \n", kr, kt);
+
+      //best_hit.what->material->k_reflection = kr;
+      //best_hit.what->material->k_refraction = kt;
+
+      // get angle between incoming ray and the normal to the plane
+      // if the angle is greater than 90 degrees then you know 
+      
+    
+
+      //printf("%f \n", cos_i);
+
+      // if cos_i > 0 then you know that the ray is exiting the object therefore swap the ior component
+      // ior component of object e.g. glass or water, and ior component air
+
+      /*
+
+      
+      float cos_i2 = 
+
+      float sin_t = sqrt(1 - cos_i2);
+      
+
+      float val = 1 - (1/n2) * (1 - cos_i2);
+
+      // if (sin t = 1 - cos_i2) >= 1 then kr = 1, kt = 0
+      // otherwise
+      
+      float cos_t = sqrt(val);
+
+      */
+  //kr = 0.0;
+
+  //return kr;
+}
+
+
+
 void object_test(Ray ray, Object *objects, Hit &best_hit)
 {
   Object *obj = objects;
@@ -87,14 +226,12 @@ void object_test(Ray ray, Object *objects, Hit &best_hit)
   return;
 }
 
-void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &depth, int r_d, int t_d)
+void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &depth, int d)
 {
-  if(r_d <= 0){
+  if (d <= 0){
     return;
   }
-  if(t_d <=0){
-    return;
-  }
+  
   // first step, find the closest primitive
 
   Hit shadow_hit;
@@ -170,74 +307,15 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 
     if(best_hit.what->material->bool_reflection || best_hit.what->material->bool_refraction){
-      // do fresnell equation
+      // do fresnel equation
+      float kr = fresnel(ray, best_hit);
 
-      // TODO : improve to track whether ray is entering or leaving object to determine ior value
-
-      // for water objects
-      // if going into object
-      // ior = water/air
-      // if exiting object
-      // ior = air/water
-
-      // going into object
-      // these 2 statements in if statement if going out of object
-      float n_out = best_hit.what->material->ior_surround;
-      float n_in = best_hit.what->material->ior_object;
-
-      float n = n_in/n_out;
-
-      best_hit.what->material->index_refraction = n;
-
-      // float ior = best_hit.what->material->index_refraction;
-
-      float cos_i = best_hit.normal.dot(ray.direction);
-      clamp(cos_i); // limit between -1 and 1
-
-      float n2 = n*n;
-      float cos_i2 = cos_i*cos_i;
-      float cos_t2 = 1 - (1/n2) * (1-cos_i2);
-      float cos_t = sqrt(cos_t2);
-      clamp(cos_t); // limit between -1 and 1
-
-      float r_par = ((n * cos_i) - cos_t) / ((n * cos_i) + cos_t);
-      float r_per = (cos_i - (n * cos_t)) / (cos_i + (n * cos_t));
-
-      float kr = 0.5 * (r_par*r_par + r_per*r_per);
-      float kt = 1 - kr;
-
-      printf("%f , %f \n", kr, kt);
+      float kt = 1.0 - kr;
 
       best_hit.what->material->k_reflection = kr;
       best_hit.what->material->k_refraction = kt;
 
-
-    
-
-      //printf("%f \n", cos_i);
-
-      // if cos_i > 0 then you know that the ray is exiting the object therefore swap the ior component
-      // ior component of object e.g. glass or water, and ior component air
-
-      /*
-
-      
-      float cos_i2 = 
-
-      float sin_t = sqrt(1 - cos_i2);
-      if (sin_t >= 1){
-        float kr = 1;
-      }
-
-      float val = 1 - (1/n2) * (1 - cos_i2);
-
-      // if (sin t = 1 - cos_i2) >= 1 then kr = 1, kt = 0
-      // otherwise
-      
-      float cos_t = sqrt(val);
-
-      */
-
+      //printf("%f , %f \n", kr, kt);
       
     }
 
@@ -263,7 +341,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       kr_col.b = kr;
 
       Colour col;
-      raytrace(r_ray, objects, lights, col, depth, r_d-1, t_d);
+      raytrace(r_ray, objects, lights, col, depth, d-1);
 
       col.scale(kr_col);
       colour.add(col);
@@ -271,7 +349,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
     }
 
     // compute refraction ray if material supports it.
-    if(best_hit.what->material->bool_refraction)
+    if(best_hit.what->material->bool_refraction && best_hit.what->material->k_refraction > 0.0)
     {
       float n = best_hit.what->material->index_refraction;
       // tray.dir = refraction(ray.dir, hit.normal, hit.ior);
@@ -285,14 +363,14 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       // cos θt = sqrt(1 – (1/η2) * (1 - cos2 θi) )
       float n2 = n*n;
       float cos_i2 = cos_i*cos_i;
-      float val = 1 - (1/n2) * (1 - cos_i2);
+      float cos_t2 = 1 - (1/n2) * (1 - cos_i2);
 
+      if (cos_t2 < 0) {
+        // not sure what to do here?
+        return;
+      }
 
-      //if (val < 0) {
-        //return;
-      //}
-
-      float cos_t = sqrt(val);
+      float cos_t = sqrt(cos_t2);
       clamp(cos_t);
 
       // T = 1/η * I – (cos θt – (1/η)* cos θi ) * N
@@ -314,7 +392,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       kt_col.b = kt;
 
       Colour col;
-      raytrace(T_ray, objects, lights, col, depth, r_d, t_d-1);
+      raytrace(T_ray, objects, lights, col, depth, d-1);
 
       col.scale(kt_col);
       colour.add(col);
@@ -332,8 +410,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 256;
-  int height = 256;
+  int width = 512;
+  int height = 512;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -367,8 +445,6 @@ int main(int argc, char *argv[])
   pm->material->bool_refraction = false;
   //pm->material->index_refraction = 0.0f;
   //pm->material->k_refraction = 0.0f;
-
-
 
   // create box for teapot to sit in
   Transform *transform2 = new Transform(1.0f, 0.0f, 0.0f,  0.0f,
@@ -407,11 +483,11 @@ int main(int argc, char *argv[])
 
   Phong bp6;
   bp6.ambient.r = 1.0f;
-	bp6.ambient.g = 0.5f;
-	bp6.ambient.b = 0.0f;
+	bp6.ambient.g = 1.0f;
+	bp6.ambient.b = 1.0f;
 	bp6.diffuse.r = 1.0f;
-	bp6.diffuse.g = 0.5f;
-	bp6.diffuse.b = 0.0f;
+	bp6.diffuse.g = 1.0f;
+	bp6.diffuse.b = 1.0f;
 	bp6.specular.r = 0.2f;
 	bp6.specular.g = 0.2f;
 	bp6.specular.b = 0.2f;
@@ -485,10 +561,9 @@ int main(int argc, char *argv[])
   sphere->material = &bp2;
   sphere->material->bool_reflection = true;
   sphere->material->bool_refraction = true;
-  sphere->material->ior_object = 1.33f; // water
+  //sphere->material->ior_object = 1.33f; // water
+  sphere->material->ior_object = 1.52f; // glass
   sphere->material->ior_surround = 1.0003f; // air
-
-
 
   //sphere->material->k_reflection = 0.5f;
   //sphere->material->k_refraction = 0.5f;
@@ -523,6 +598,36 @@ int main(int argc, char *argv[])
   //sphere2->material->k_reflection = 0.5f;
   //sphere2->material->k_refraction = 0.5f;
   //sphere2->material->index_refraction = 1.33f; // water 
+
+  // top bubble
+  Vertex v3;
+  v3.x = 0.0f;
+  v3.y = -1.0f;
+  v3.z = 4.0f;
+  
+  Sphere *sphere3 = new Sphere(v3,0.6f);
+  Phong bp7;
+  bp7.ambient.r = 0.6f;
+	bp7.ambient.g = 0.6f;
+	bp7.ambient.b = 0.6f;
+	bp7.diffuse.r = 0.6f;
+	bp7.diffuse.g = 0.6f;
+	bp7.diffuse.b = 0.6f;
+	bp7.specular.r = 0.4f;
+	bp7.specular.g = 0.4f;
+	bp7.specular.b = 0.4f;
+	bp7.power = 40.0f;
+
+ 	sphere3->material = &bp7;
+
+  sphere3->material->bool_reflection = true;
+  sphere3->material->bool_refraction = true;
+  sphere3->material->ior_object = 1.33f; // water
+  sphere3->material->ior_surround = 1.0003f; // air
+
+  //sphere2->material->k_reflection = 0.5f;
+  //sphere2->material->k_refraction = 0.5f;
+  //sphere2->material->index_refraction = 1.33f; // water 
   
   // link objects
   pm->next = background_pm;
@@ -532,6 +637,7 @@ int main(int argc, char *argv[])
   right_wall->next = ceiling_pm;
   ceiling_pm->next = sphere;
   sphere->next = sphere2;
+  sphere2->next = sphere3;
   
   // generate shooting ray from camera point
   Ray ray;
@@ -602,12 +708,14 @@ int main(int argc, char *argv[])
       float depth;
 
       // reflection recursion depth
-      int r_d = 3;
+      int r_d = 10;
       // transparency (refraction) recursion depth
       int t_d = 10;
 
+      int d = 10;
+
       // uses point light pl, change to dl to use directional light
-      raytrace(ray, pm, pl, colour, depth, r_d, t_d);
+      raytrace(ray, pm, pl, colour, depth, d);
 
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
       //fb->plotDepth(x,y, depth);
