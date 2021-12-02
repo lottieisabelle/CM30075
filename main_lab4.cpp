@@ -410,8 +410,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 512;
-  int height = 512;
+  int width = 1024;
+  int height = 1024;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -562,7 +562,8 @@ int main(int argc, char *argv[])
   sphere->material->bool_reflection = true;
   sphere->material->bool_refraction = true;
   //sphere->material->ior_object = 1.33f; // water
-  sphere->material->ior_object = 1.52f; // glass
+  sphere->material->ior_object = 1.38f; // soap bubbles
+  //sphere->material->ior_object = 1.52f; // glass
   sphere->material->ior_surround = 1.0003f; // air
 
   //sphere->material->k_reflection = 0.5f;
@@ -592,14 +593,15 @@ int main(int argc, char *argv[])
 
   sphere2->material->bool_reflection = true;
   sphere2->material->bool_refraction = true;
-  sphere2->material->ior_object = 1.33f; // water
+  //sphere2->material->ior_object = 1.33f; // water
+  sphere2->material->ior_object = 1.38f; // soap bubbles
   sphere2->material->ior_surround = 1.0003f; // air
 
   //sphere2->material->k_reflection = 0.5f;
   //sphere2->material->k_refraction = 0.5f;
   //sphere2->material->index_refraction = 1.33f; // water 
 
-  // top bubble
+  // big bubble
   Vertex v3;
   v3.x = 0.0f;
   v3.y = -1.0f;
@@ -622,7 +624,8 @@ int main(int argc, char *argv[])
 
   sphere3->material->bool_reflection = true;
   sphere3->material->bool_refraction = true;
-  sphere3->material->ior_object = 1.33f; // water
+  //sphere3->material->ior_object = 1.33f; // water
+  sphere3->material->ior_object = 1.38f; // soap bubbles
   sphere3->material->ior_surround = 1.0003f; // air
 
   //sphere2->material->k_reflection = 0.5f;
