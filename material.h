@@ -17,6 +17,8 @@ public:
 	float k_reflection;
 	float k_refraction;
 	float index_refraction;
+	float ior_object;
+	float ior_surround;
 	bool bool_reflection;
 	bool bool_refraction;
 

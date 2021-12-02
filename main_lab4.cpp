@@ -44,6 +44,14 @@
 
 using namespace std;
 
+void clamp(float &x){
+  if (x <= -1){
+    x = -1.0;
+  } else if (x >= 1){
+    x = 1.0;
+  } 
+}
+
 void object_test(Ray ray, Object *objects, Hit &best_hit)
 {
   Object *obj = objects;
@@ -160,28 +168,61 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       light = light->next;
     }
 
+
     if(best_hit.what->material->bool_reflection || best_hit.what->material->bool_refraction){
       // do fresnell equation
 
       // TODO : improve to track whether ray is entering or leaving object to determine ior value
-      float ior = best_hit.what->material->index_refraction;
+
+      // for water objects
+      // if going into object
+      // ior = water/air
+      // if exiting object
+      // ior = air/water
+
+      // going into object
+      // these 2 statements in if statement if going out of object
+      float n_out = best_hit.what->material->ior_surround;
+      float n_in = best_hit.what->material->ior_object;
+
+      float n = n_in/n_out;
+
+      best_hit.what->material->index_refraction = n;
+
+      // float ior = best_hit.what->material->index_refraction;
 
       float cos_i = best_hit.normal.dot(ray.direction);
+      clamp(cos_i); // limit between -1 and 1
+
+      float n2 = n*n;
+      float cos_i2 = cos_i*cos_i;
+      float cos_t2 = 1 - (1/n2) * (1-cos_i2);
+      float cos_t = sqrt(cos_t2);
+      clamp(cos_t); // limit between -1 and 1
+
+      float r_par = ((n * cos_i) - cos_t) / ((n * cos_i) + cos_t);
+      float r_per = (cos_i - (n * cos_t)) / (cos_i + (n * cos_t));
+
+      float kr = 0.5 * (r_par*r_par + r_per*r_per);
+      float kt = 1 - kr;
+
+      printf("%f , %f \n", kr, kt);
+
+      best_hit.what->material->k_reflection = kr;
+      best_hit.what->material->k_refraction = kt;
+
+
+    
+
       //printf("%f \n", cos_i);
 
       // if cos_i > 0 then you know that the ray is exiting the object therefore swap the ior component
       // ior component of object e.g. glass or water, and ior component air
 
-      if(cos_i > 1){
-        cos_i = 1;
-      }
+      /*
 
-      if(cos_i < -1){
-        cos_i = -1;
-      }
-
-      float n2 = ior*ior;
-      float cos_i2 = cos_i*cos_i;
+      
+      float cos_i2 = 
 
       float sin_t = sqrt(1 - cos_i2);
       if (sin_t >= 1){
@@ -195,16 +236,9 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       
       float cos_t = sqrt(val);
 
-      float r_par = ((ior * cos_i) - cos_t) / ((ior * cos_i) + cos_t);
-      float r_per = (cos_i - (ior * cos_t)) / (cos_i + (ior * cos_t));
+      */
 
-      float kr = 0.5 * (r_par*r_par + r_per*r_per);
-      float kt = 1 - kr;
-
-      printf("%f , %f \n", kr, kt);
-
-      best_hit.what->material->k_reflection = kr;
-      best_hit.what->material->k_refraction = kt;
+      
     }
 
     // compute reflection ray if material supports it.
@@ -239,27 +273,30 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
     // compute refraction ray if material supports it.
     if(best_hit.what->material->bool_refraction)
     {
-      float ior = best_hit.what->material->index_refraction;
+      float n = best_hit.what->material->index_refraction;
       // tray.dir = refraction(ray.dir, hit.normal, hit.ior);
       
       // cos θi = N.I
       // I = incident ray direction vector
       // N = normal to surface direction vector
       float cos_i = best_hit.normal.dot(ray.direction);
+      clamp(cos_i);
 
       // cos θt = sqrt(1 – (1/η2) * (1 - cos2 θi) )
-      float n2 = ior*ior;
+      float n2 = n*n;
       float cos_i2 = cos_i*cos_i;
       float val = 1 - (1/n2) * (1 - cos_i2);
 
-      if (val < 0) {
-        return;
-      }
+
+      //if (val < 0) {
+        //return;
+      //}
 
       float cos_t = sqrt(val);
+      clamp(cos_t);
 
       // T = 1/η * I – (cos θt – (1/η)* cos θi ) * N
-      Vector T_dir = 1/ior * ray.direction - (cos_t - (1/ior) * cos_i) * best_hit.normal;
+      Vector T_dir = 1/n * ray.direction - (cos_t - (1/n) * cos_i) * best_hit.normal;
       
       // tray.pos = hit.pos + small_e * tray.dir;
       Vertex T_pos;
@@ -325,11 +362,13 @@ int main(int argc, char *argv[])
 	pm->material = &bp1;
 
   pm->material->bool_reflection = false;
-  pm->material->k_reflection = 0.4f;
+  //pm->material->k_reflection = 0.0f;
 
   pm->material->bool_refraction = false;
-  pm->material->index_refraction = 0.0f;
-  pm->material->k_refraction = 0.0f;
+  //pm->material->index_refraction = 0.0f;
+  //pm->material->k_refraction = 0.0f;
+
+
 
   // create box for teapot to sit in
   Transform *transform2 = new Transform(1.0f, 0.0f, 0.0f,  0.0f,
@@ -381,49 +420,50 @@ int main(int argc, char *argv[])
   // back wall
   background_pm->material = &bp6;
   background_pm->material->bool_reflection = false;
-  background_pm->material->k_reflection = 0.0f;
+  //background_pm->material->k_reflection = 0.0f;
   
   background_pm->material->bool_refraction = false;
-  background_pm->material->k_refraction = 0.0f;
-  background_pm->material->index_refraction = 0.0f;
+  //background_pm->material->k_refraction = 0.0f;
+  //background_pm->material->index_refraction = 0.0f;
 
   // floor
   floor_pm->material = &bp4;
   floor_pm->material->bool_reflection = false;
-  floor_pm->material->k_reflection = 0.0f;
+  //floor_pm->material->k_reflection = 0.0f;
   
   floor_pm->material->bool_refraction = false;
-  floor_pm->material->k_refraction = 0.0f;
-  floor_pm->material->index_refraction = 0.0f;
+  //floor_pm->material->k_refraction = 0.0f;
+  //floor_pm->material->index_refraction = 0.0f;
 
   // left wall
   left_wall->material = &bp5;
   left_wall->material->bool_reflection = false;
-  left_wall->material->k_reflection = 0.0f;
+  //left_wall->material->k_reflection = 0.0f;
   
   left_wall->material->bool_refraction = false;
-  left_wall->material->k_refraction = 0.0f;
-  left_wall->material->index_refraction = 0.0f;
+  //left_wall->material->k_refraction = 0.0f;
+  //left_wall->material->index_refraction = 0.0f;
 
   // right wall
   right_wall->material = &bp5;
   right_wall->material->bool_reflection = false;
-  right_wall->material->k_reflection = 0.0f;
+  //right_wall->material->k_reflection = 0.0f;
   
   right_wall->material->bool_refraction = false;
-  right_wall->material->k_refraction = 0.0f;
-  right_wall->material->index_refraction = 0.0f;
+  //right_wall->material->k_refraction = 0.0f;
+  //right_wall->material->index_refraction = 0.0f;
 
   // ceiling
   ceiling_pm->material = &bp4;
   ceiling_pm->material->bool_reflection = false;
-  ceiling_pm->material->k_reflection = 0.0f;
+  //ceiling_pm->material->k_reflection = 0.0f;
   
   ceiling_pm->material->bool_refraction = false;
-  ceiling_pm->material->k_refraction = 0.0f;
-  ceiling_pm->material->index_refraction = 0.0f;
+  //ceiling_pm->material->k_refraction = 0.0f;
+  //ceiling_pm->material->index_refraction = 0.0f;
 
   // create bubbles
+  // lower bubble
   Vertex v;
   v.x = 3.0f; 
   v.y = -1.0f; 
@@ -444,12 +484,17 @@ int main(int argc, char *argv[])
 
   sphere->material = &bp2;
   sphere->material->bool_reflection = true;
-  sphere->material->k_reflection = 0.5f;
-
   sphere->material->bool_refraction = true;
-  sphere->material->k_refraction = 0.5f;
-  sphere->material->index_refraction = 1.33f; // water
+  sphere->material->ior_object = 1.33f; // water
+  sphere->material->ior_surround = 1.0003f; // air
 
+
+
+  //sphere->material->k_reflection = 0.5f;
+  //sphere->material->k_refraction = 0.5f;
+  //sphere->material->index_refraction = 1.33f; // water
+
+  // top bubble
   Vertex v2;
   v2.x = 2.0f;
   v2.y = 1.0f;
@@ -471,11 +516,13 @@ int main(int argc, char *argv[])
  	sphere2->material = &bp3;
 
   sphere2->material->bool_reflection = true;
-  sphere2->material->k_reflection = 0.5f;
-
   sphere2->material->bool_refraction = true;
-  sphere2->material->k_refraction = 0.5f;
-  sphere2->material->index_refraction = 1.33f; // water 
+  sphere2->material->ior_object = 1.33f; // water
+  sphere2->material->ior_surround = 1.0003f; // air
+
+  //sphere2->material->k_reflection = 0.5f;
+  //sphere2->material->k_refraction = 0.5f;
+  //sphere2->material->index_refraction = 1.33f; // water 
   
   // link objects
   pm->next = background_pm;
