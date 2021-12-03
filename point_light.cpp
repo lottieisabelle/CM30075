@@ -17,6 +17,7 @@ PointLight::PointLight(Vertex pos, Colour col)
 bool PointLight::get_direction(Vertex &surface, Vector &dir)
 {
 	dir = position.getDirection(surface);
+    dir.normalise();
 
 	return true;
 }

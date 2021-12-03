@@ -307,8 +307,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 int main(int argc, char *argv[])
 {
-  int width = 1024;
-  int height = 1024;
+  int width = 256;
+  int height = 256;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -577,7 +577,10 @@ int main(int argc, char *argv[])
     float p_y = dist(mt);
     float p_z = dist(mt);
 
-    p.set_dir(Vector(p_x, p_y, p_z));
+    Vector photon_dir (p_x, p_y, p_z);
+    photon_dir.normalise();
+
+    p.set_dir(photon_dir);
     //printf("%f , %f , %f\n",p_x, p_y, p_z);
 
     // determine hit point (use intersection?) basically like raytrace?
@@ -607,11 +610,7 @@ int main(int argc, char *argv[])
       Colour colour;
       float depth;
 
-      // reflection recursion depth
-      int r_d = 10;
-      // transparency (refraction) recursion depth
-      int t_d = 10;
-
+      // reflection and refraction recursion depth
       int d = 10;
 
       // uses point light pl, change to dl to use directional light
