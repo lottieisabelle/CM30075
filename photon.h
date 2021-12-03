@@ -8,15 +8,11 @@ public :
     Vector direction;
     Colour intensity;
     Hit intersection;
-    bool direct;
-    bool indirect;
-    bool shadow;
+    string p_type;
 
     Photon()
     {
-        direct = false;
-        indirect = false;
-        shadow = false;
+       
     }
 
     void set_intensity(Colour col)
@@ -33,6 +29,11 @@ public :
     void set_hit(Hit &hit)
     {
         intersection = hit;
+    }
+
+    void set_type(string type)
+    {
+        p_type = type;
     }
 
 };

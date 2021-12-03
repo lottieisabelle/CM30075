@@ -314,7 +314,104 @@ void PolyMesh::triangle_intersection(Ray ray, Hit &hit, int which_triangle)
   hit.what = this;
   hit.position = p;
 
-  hit.normal = face_normal[which_triangle];
+  // calculate normal at point P
+  
+  // vertices A, B and C = v0, v1, v2
+  Vertex A, B, C;
+  A.x = vertex[triangle[which_triangle][0]].x;
+  B.x = vertex[triangle[which_triangle][1]].x;
+  C.x = vertex[triangle[which_triangle][2]].x;
+
+  A.y = vertex[triangle[which_triangle][0]].y;
+  B.y = vertex[triangle[which_triangle][1]].y;
+  C.y = vertex[triangle[which_triangle][2]].y;
+
+  A.z = vertex[triangle[which_triangle][0]].z;
+  B.z = vertex[triangle[which_triangle][1]].z;
+  C.z = vertex[triangle[which_triangle][2]].z;
+
+  Vector v_AB = A.getDirection(B);
+  v_AB.normalise();
+  Vector v_AC = A.getDirection(C);
+  v_AC.normalise();
+  Vector v_AP = A.getDirection(p);
+  v_AP.normalise();
+
+  float d_ABAB = v_AB.dot(v_AB);
+  float d_ABAC = v_AB.dot(v_AC);
+  float d_ACAC = v_AC.dot(v_AC);
+  float d_APAB = v_AP.dot(v_AB);
+  float d_APAC = v_AP.dot(v_AC);
+
+  float denom = d_ABAB * d_ACAC - d_ABAC * d_ABAC;
+
+  float pv;
+  float pw;
+  float pu;
+  pv = (d_ACAC * d_APAB - d_ABAC * d_APAC) / denom;
+  pw = (d_ABAB * d_APAC - d_ABAC * d_APAB) / denom;
+  pu = 1.0 - pv - pw;
+
+
+  /*
+
+  float d_ABAB = v_AB.dot(v_AB);
+  float d_ACAB = v_AC.dot(v_AB);
+  float d_APAB = v_AP.dot(v_AB);
+
+  float d_ABAC = v_AB.dot(v_AC);
+  float d_ACAC = v_AC.dot(v_AC);
+  float d_APAC = v_AP.dot(v_AC);
+
+  
+
+  float pv;
+  float pw;
+  float pu;
+  pv = (d_APAB - d_APAC) / (d_ABAB - d_ABAC);
+  pw = (d_APAC - (pv*d_ABAC)) / d_ACAC;
+  pu = 1 - pv - pw;
+
+  */
+
+  //printf("pv : %f , pw : %f , pu : %f\n", pv, pw, pu);
+
+  // vertex normals of 
+  Vector v0_n;
+  Vector v1_n;
+  Vector v2_n;
+
+  Vector vvv = vertex_normal[triangle[which_triangle][0]];
+
+  v0_n.x = vertex_normal[triangle[which_triangle][0]].x;
+  v1_n.x = vertex_normal[triangle[which_triangle][1]].x;
+  v2_n.x = vertex_normal[triangle[which_triangle][2]].x;
+
+  v0_n.y = vertex_normal[triangle[which_triangle][0]].y;
+  v1_n.y = vertex_normal[triangle[which_triangle][1]].y;
+  v2_n.y = vertex_normal[triangle[which_triangle][2]].y;
+
+  v0_n.z = vertex_normal[triangle[which_triangle][0]].z;
+  v1_n.z = vertex_normal[triangle[which_triangle][1]].z;
+  v2_n.z = vertex_normal[triangle[which_triangle][2]].z;
+
+/*
+  Vector a = operator*(pu,v0_n);
+  Vector b = operator*(pv,v1_n);
+  Vector c = operator*(pw,v2_n);
+
+  Vector aplusb = operator+(a,b);
+*/
+
+  Vector p_n;
+
+  p_n.x = v0_n.x*pu + v1_n.x*pv + v2_n.x*pw;
+  p_n.y = v0_n.y*pu + v1_n.y*pv + v2_n.y*pw;
+  p_n.z = v0_n.z*pu + v1_n.z*pv + v2_n.z*pw;
+
+
+  hit.normal = p_n;
+  //hit.normal = face_normal[which_triangle];
 
   hit.normal.normalise();
 
