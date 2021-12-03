@@ -207,18 +207,15 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       light = light->next;
     }
 
-
-    if(best_hit.what->material->bool_reflection || best_hit.what->material->bool_refraction){
+    if(best_hit.what->material->bool_refraction){
       // do fresnel equation
       float kr = fresnel(ray, best_hit);
-
       float kt = 1.0 - kr;
 
       best_hit.what->material->k_reflection = kr;
       best_hit.what->material->k_refraction = kt;
 
       //printf("%f , %f \n", kr, kt);
-      
     }
 
     // compute reflection ray if material supports it.
@@ -337,11 +334,11 @@ int main(int argc, char *argv[])
 	pm->material = &bp1;
 
   pm->material->bool_reflection = false;
-  //pm->material->k_reflection = 0.0f;
-
+  //pm->material->k_reflection = 0.4f;
   pm->material->bool_refraction = false;
-  //pm->material->index_refraction = 0.0f;
-  //pm->material->k_refraction = 0.0f;
+  //pm->material->ior_object = 1.52f; // glass
+  //pm->material->ior_surround = 1.0003f; // air
+
 
   // create box for teapot to sit in
   Transform *transform2 = new Transform(1.0f, 0.0f, 0.0f,  0.0f,
@@ -392,48 +389,28 @@ int main(int argc, char *argv[])
 
   // back wall
   background_pm->material = &bp6;
-  background_pm->material->bool_reflection = false;
-  //background_pm->material->k_reflection = 0.0f;
-  
-  background_pm->material->bool_refraction = false;
-  //background_pm->material->k_refraction = 0.0f;
-  //background_pm->material->index_refraction = 0.0f;
+  background_pm->material->bool_reflection = false;  
+  background_pm->material->bool_refraction = false; 
 
   // floor
   floor_pm->material = &bp4;
   floor_pm->material->bool_reflection = false;
-  //floor_pm->material->k_reflection = 0.0f;
-  
   floor_pm->material->bool_refraction = false;
-  //floor_pm->material->k_refraction = 0.0f;
-  //floor_pm->material->index_refraction = 0.0f;
 
   // left wall
   left_wall->material = &bp5;
   left_wall->material->bool_reflection = false;
-  //left_wall->material->k_reflection = 0.0f;
-  
   left_wall->material->bool_refraction = false;
-  //left_wall->material->k_refraction = 0.0f;
-  //left_wall->material->index_refraction = 0.0f;
 
   // right wall
   right_wall->material = &bp5;
-  right_wall->material->bool_reflection = false;
-  //right_wall->material->k_reflection = 0.0f;
-  
+  right_wall->material->bool_reflection = false;  
   right_wall->material->bool_refraction = false;
-  //right_wall->material->k_refraction = 0.0f;
-  //right_wall->material->index_refraction = 0.0f;
 
   // ceiling
   ceiling_pm->material = &bp4;
-  ceiling_pm->material->bool_reflection = false;
-  //ceiling_pm->material->k_reflection = 0.0f;
-  
+  ceiling_pm->material->bool_reflection = false;  
   ceiling_pm->material->bool_refraction = false;
-  //ceiling_pm->material->k_refraction = 0.0f;
-  //ceiling_pm->material->index_refraction = 0.0f;
 
   // create bubbles
   // lower bubble
@@ -458,14 +435,10 @@ int main(int argc, char *argv[])
   sphere->material = &bp2;
   sphere->material->bool_reflection = true;
   sphere->material->bool_refraction = true;
-  //sphere->material->ior_object = 1.33f; // water
   sphere->material->ior_object = 1.38f; // soap bubbles
-  //sphere->material->ior_object = 1.52f; // glass
   sphere->material->ior_surround = 1.0003f; // air
-
-  //sphere->material->k_reflection = 0.5f;
-  //sphere->material->k_refraction = 0.5f;
-  //sphere->material->index_refraction = 1.33f; // water
+  //sphere->material->ior_object = 1.52f; // glass
+  //sphere->material->ior_object = 1.33f; // water
 
   // top bubble
   Vertex v2;
@@ -494,14 +467,10 @@ int main(int argc, char *argv[])
   sphere2->material->ior_object = 1.38f; // soap bubbles
   sphere2->material->ior_surround = 1.0003f; // air
 
-  //sphere2->material->k_reflection = 0.5f;
-  //sphere2->material->k_refraction = 0.5f;
-  //sphere2->material->index_refraction = 1.33f; // water 
-
   // big bubble
   Vertex v3;
   v3.x = 0.0f;
-  v3.y = -1.0f;
+  v3.y = 2.0f;
   v3.z = 4.0f;
   
   Sphere *sphere3 = new Sphere(v3,0.6f);
@@ -525,10 +494,6 @@ int main(int argc, char *argv[])
   sphere3->material->ior_object = 1.38f; // soap bubbles
   sphere3->material->ior_surround = 1.0003f; // air
 
-  //sphere2->material->k_reflection = 0.5f;
-  //sphere2->material->k_refraction = 0.5f;
-  //sphere2->material->index_refraction = 1.33f; // water 
-  
   // link objects
   pm->next = background_pm;
   background_pm->next = floor_pm;
@@ -537,7 +502,7 @@ int main(int argc, char *argv[])
   right_wall->next = ceiling_pm;
   ceiling_pm->next = sphere;
   sphere->next = sphere2;
-  sphere2->next = sphere3;
+  //sphere2->next = sphere3;
   
   // generate shooting ray from camera point
   Ray ray;
@@ -554,7 +519,6 @@ int main(int argc, char *argv[])
   // z into and out of the scene, more extemely into the scene = more positive
 
   PointLight *pl = new PointLight(Vertex(-5.0f,2.0f,-10.0f), Colour(1.0f,1.0f,1.0f,0.0f));
-
 
   // photon mapping here
 
@@ -622,6 +586,13 @@ int main(int argc, char *argv[])
 
     cerr << "*" << flush;
   }
+
+  // blur middle line maybe
+  // for image height in pixels
+  // get 2 middle pixels colour
+  // x/2 and x/2 +1
+  // get average of the two 
+  // set pixels again
   
   // Output the framebuffer.
   fb->writeRGBFile((char *)"test.ppm");

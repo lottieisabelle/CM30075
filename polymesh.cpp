@@ -315,7 +315,6 @@ void PolyMesh::triangle_intersection(Ray ray, Hit &hit, int which_triangle)
   hit.position = p;
 
   // calculate normal at point P
-  
   // vertices A, B and C
   Vertex A = vertex[triangle[which_triangle][0]];
   Vertex B = vertex[triangle[which_triangle][1]];
@@ -343,40 +342,12 @@ void PolyMesh::triangle_intersection(Ray ray, Hit &hit, int which_triangle)
   pw = (d_ABAB * d_APAC - d_ABAC * d_APAB) / denom;
   pu = 1.0f - pv - pw;
 
-
-  /*
-
-  float d_ABAB = v_AB.dot(v_AB);
-  float d_ACAB = v_AC.dot(v_AB);
-  float d_APAB = v_AP.dot(v_AB);
-
-  float d_ABAC = v_AB.dot(v_AC);
-  float d_ACAC = v_AC.dot(v_AC);
-  float d_APAC = v_AP.dot(v_AC);
-
-  float pv;
-  float pw;
-  float pu;
-  pv = (d_APAB - d_APAC) / (d_ABAB - d_ABAC);
-  pw = (d_APAC - (pv*d_ABAC)) / d_ACAC;
-  pu = 1 - pv - pw;
-
-  */
-
   //printf("pv : %f , pw : %f , pu : %f\n", pv, pw, pu);
 
   // vertex normals of triangle vertices  
   Vector v0_n = vertex_normal[triangle[which_triangle][0]];
   Vector v1_n = vertex_normal[triangle[which_triangle][1]];
   Vector v2_n = vertex_normal[triangle[which_triangle][2]];
-
-/*
-  Vector a = operator*(pu,v0_n);
-  Vector b = operator*(pv,v1_n);
-  Vector c = operator*(pw,v2_n);
-
-  Vector aplusb = operator+(a,b);
-*/
 
   Vector p_n;
 
