@@ -6,12 +6,13 @@ PointLight::PointLight()
     Light();
 }
 
-PointLight::PointLight(Vertex pos, Colour col)
+PointLight::PointLight(Vertex pos, Vector dir, Colour col)
 {
     Light();
 
     position = pos;
     intensity = col;
+    direction = dir;
 }
 
 bool PointLight::get_direction(Vertex &surface, Vector &dir)
@@ -25,4 +26,12 @@ bool PointLight::get_direction(Vertex &surface, Vector &dir)
 void PointLight::get_intensity(Vertex &surface, Colour &level)
 {
 	level = intensity;
+}
+
+Vertex PointLight::get_position(){
+    return position;
+}
+
+Vector PointLight::get_direction(){
+    return direction;
 }

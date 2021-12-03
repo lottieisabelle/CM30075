@@ -21,6 +21,7 @@ public:
 	float ior_surround;
 	bool bool_reflection;
 	bool bool_refraction;
+	bool bool_specular;
 
 	virtual void compute_base_colour(Colour &result)
 	{
@@ -33,5 +34,21 @@ public:
 		result.r = 0.0f;
 		result.g = 0.0f;
 		result.b = 0.0f;
+	}
+
+	virtual float prob_diff(){
+		return 0.0f;
+	}
+
+	virtual float max(){
+		return 0.0f;
+	}
+
+	virtual Colour get_diffuse(){
+		return Colour (0,0,0,0);
+	}
+
+	virtual Colour get_specular(){
+		return Colour (0,0,0,0);
 	}
 };

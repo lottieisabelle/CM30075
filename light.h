@@ -37,4 +37,14 @@ public:
 
 	}
 
+	virtual Vertex get_position()
+	{
+		return Vertex (0,0,0);
+	}
+
+	virtual Vector get_direction()
+	{
+		return Vector (0,0,0);
+	}
+
 };

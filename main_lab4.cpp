@@ -34,6 +34,9 @@
 #include "plane.h"
 #include "photon.h"
 #include "point_light.h"
+// 3rd party kd tree
+#include "kd-master/src/core.h"
+#include "kd-master/src/tree.h"
 
 #include <iostream>
 #include <fstream>
@@ -43,6 +46,35 @@
 #include <random>
 
 using namespace std;
+
+struct CORE{
+  typedef Photon* Item;
+  typedef Vertex Point;
+  typedef float Coord;
+
+  static const int DIMENSIONS = 3; // 3D space
+  static const int MAX_DEPTH  = 1000;
+  static const int STORAGE    = 1;
+
+  static Coord coordinate(const Point& point, int axis)
+  {
+    if(axis == 0) return point.x;
+    if(axis == 1) return point.y;
+    if(axis == 2) return point.z;
+    else return 0;
+  }
+
+  static const Point& point(const Item& item)
+  {
+    return item->position;
+  }
+
+};
+
+Vertex tree_min(-100, -100, -5);
+Vertex tree_max(100, 100, 100);
+KD::Tree<struct CORE> global_tree(tree_min, tree_max);
+// TODO : make caustics tree here
 
 void clamp(float &x){
   if (x <= -1){
@@ -302,6 +334,193 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
   }	
 }
 
+void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
+{
+  object_test(ray, objects, *hit);
+
+  if(hit->flag){
+    p->position = hit->position;
+    p->direction = ray.direction;
+    p->what = hit->what;
+    // photon normal?
+    global_tree.insert(p);
+
+    // send shadow photons
+    Ray shadow_ray;
+    Hit shadow_hit;
+    shadow_ray.direction = ray.direction;
+    shadow_ray.direction.normalise();
+    shadow_ray.position.x = hit->position.x + (0.0001 * shadow_ray.direction.x);
+    shadow_ray.position.y = hit->position.y + (0.0001 * shadow_ray.direction.y);
+    shadow_ray.position.z = hit->position.z + (0.0001 * shadow_ray.direction.z);
+
+    object_test(shadow_ray, objects, shadow_hit);
+
+    // if shadow photon hits a new object that creates a shadow (i.e. not refractive ones) store hit now
+    if(shadow_hit.flag && !shadow_hit.what->material->bool_refraction){
+      Photon *shadow_photon;
+      shadow_photon->direction = shadow_ray.direction;
+      shadow_photon->position = shadow_hit.position;
+      shadow_photon->intensity = Colour (0,0,0,0);
+      shadow_photon->what = shadow_hit.what;
+      shadow_photon->p_type = 's';
+      global_tree.insert(shadow_photon);
+    }
+
+    // calculate probability of absorption, diffuse/specular reflection for hit material
+    float random_num = (float) rand() / RAND_MAX;
+    float prob_diff = hit->what->material->prob_diff();
+    float prob_ref = hit->what->material->max();
+    prob_diff *= prob_ref;
+    float prob_spec = prob_ref - prob_diff; // for caustic photons
+    float prob_abs = 1 - prob_ref;
+
+    // russian roulette
+    if(random_num < prob_ref){
+      if(random_num < prob_diff){
+        // get random direction for a bounced ray
+        // random number generator set up code, for random direction vectors
+        Vector v_diffuse;
+
+        random_device rd;
+        mt19937 mt(rd());
+        uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) 
+        do {
+          v_diffuse.x = dist(mt);
+          v_diffuse.y = dist(mt);
+          v_diffuse.z = dist(mt);
+          v_diffuse.normalise();
+        } while(v_diffuse.dot(hit->normal) < 0.5f);
+
+        // absorb colour of the hit
+        Colour diffuse_col = hit->what->material->get_diffuse();
+        Colour intensity = p->intensity;
+        intensity.scale(diffuse_col);
+        Colour tempColD = Colour (1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff);
+        intensity.scale(tempColD);
+
+        // create the new diffusely reflected photon and trace
+        Photon *ref_photon;
+        ref_photon->position = hit->position;
+        ref_photon->direction = ray.direction;
+        ref_photon->intensity = intensity;
+        ref_photon->what = hit->what;
+        ref_photon->p_type = 'i';
+
+        Vertex new_pos (hit->position.x + 0.0001 * v_diffuse.x, hit->position.y + 0.0001 * v_diffuse.y, hit->position.z + 0.0001 * v_diffuse.z);
+        trace_photon(Ray(new_pos, v_diffuse), ref_photon, objects, hit);
+
+      } else if (random_num < prob_diff + prob_spec && hit->what->material->bool_specular){  // specular reflection
+
+        Vector v_specular;
+        hit->normal.reflection(ray.direction, v_specular);
+
+        // absorb colour of the hit
+        Colour specular_col = hit->what->material->get_specular();
+        Colour intensity = p->intensity;
+        intensity.scale(specular_col);
+        Colour tempColS = Colour (1.0f/prob_spec, 1.0f/prob_spec, 1.0f/prob_spec, 1.0f/prob_spec);
+        intensity.scale(tempColS);
+
+        // create the new diffusely reflected photon and trace
+        Photon *ref_photon;
+        ref_photon->position = hit->position;
+        ref_photon->direction = ray.direction;
+        ref_photon->intensity = intensity;
+        ref_photon->what = hit->what;
+        ref_photon->p_type = 'i';
+
+        Vertex new_pos (hit->position.x + 0.0001 * v_specular.x, hit->position.y + 0.0001 * v_specular.y, hit->position.z + 0.0001 * v_specular.z);
+        trace_photon(Ray(new_pos, v_specular), ref_photon, objects, hit);
+
+      }
+
+    } else if (random_num < prob_abs) {
+      // if absorbed into refractive object, refract - otherwise do nothing
+      if(hit->what->material->bool_refraction){
+
+        float n = hit->what->material->index_refraction;
+        // tray.dir = refraction(ray.dir, hit.normal, hit.ior);
+        
+        // cos θi = N.I
+        // I = incident ray direction vector
+        // N = normal to surface direction vector
+        float cos_i = hit->normal.dot(ray.direction);
+        clamp(cos_i);
+
+        // cos θt = sqrt(1 – (1/η2) * (1 - cos2 θi) )
+        float n2 = n*n;
+        float cos_i2 = cos_i*cos_i;
+        float cos_t2 = 1 - (1/n2) * (1 - cos_i2);
+
+        float cos_t = sqrt(cos_t2);
+        clamp(cos_t);
+
+        // T = 1/η * I – (cos θt – (1/η)* cos θi ) * N
+        Vector v_refracted = 1/n * ray.direction - (cos_t - (1/n) * cos_i) * hit->normal;
+
+        v_refracted.normalise();
+
+        Vertex new_pos (hit->position.x + 0.0001 * v_refracted.x, hit->position.y + 0.0001 * v_refracted.y, hit->position.z + 0.0001 * v_refracted.z);
+        Photon *refracted_photon;
+        refracted_photon->direction = ray.direction;
+        refracted_photon->position = hit->position;
+        refracted_photon->what = hit->what;
+        refracted_photon->p_type = 'i';
+        
+        trace_photon(Ray(new_pos, v_refracted), refracted_photon, objects, hit);
+
+      }
+    }
+
+  }
+}
+
+void cast_photon(Light *light, Object *objects)
+{
+  Vector light_dir = light->get_direction();
+  Vertex light_pos = light->get_position();
+
+  Hit *hit = new Hit();
+
+  // random number generator set up code, for random direction vectors
+  random_device rd;
+  mt19937 mt(rd());
+  uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) TODO define range
+  
+  int n = 10000; // number of photons TODO set number
+  
+  // for n photons
+  for (int i=0; i<n; ++i){
+    // create photon
+    
+    Photon *p;
+
+    // send out into picture, meaning give photon direction vector
+    // create random direction vectors all across image
+
+    Vector photon_dir;
+
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) 
+    do {
+      photon_dir.x = dist(mt);
+      photon_dir.y = dist(mt);
+      photon_dir.z = dist(mt);
+      photon_dir.normalise();
+    } while(photon_dir.dot(light_dir) < 0.5f);
+
+    printf("boo");
+    
+    p->direction = photon_dir;
+    
+
+    trace_photon(Ray(light_pos, photon_dir), p, objects, hit);
+
+  } 
+}
+
 int main(int argc, char *argv[])
 {
   int width = 256;
@@ -336,6 +555,7 @@ int main(int argc, char *argv[])
   pm->material->bool_reflection = false;
   //pm->material->k_reflection = 0.4f;
   pm->material->bool_refraction = false;
+  pm->material->bool_specular = true;
   //pm->material->ior_object = 1.52f; // glass
   //pm->material->ior_surround = 1.0003f; // air
 
@@ -391,26 +611,31 @@ int main(int argc, char *argv[])
   background_pm->material = &bp6;
   background_pm->material->bool_reflection = false;  
   background_pm->material->bool_refraction = false; 
+  background_pm->material->bool_specular = false;
 
   // floor
   floor_pm->material = &bp4;
   floor_pm->material->bool_reflection = false;
   floor_pm->material->bool_refraction = false;
+  floor_pm->material->bool_specular = false;
 
   // left wall
   left_wall->material = &bp5;
   left_wall->material->bool_reflection = false;
   left_wall->material->bool_refraction = false;
+  left_wall->material->bool_specular = false;
 
   // right wall
   right_wall->material = &bp5;
   right_wall->material->bool_reflection = false;  
   right_wall->material->bool_refraction = false;
+  right_wall->material->bool_specular = false;
 
   // ceiling
   ceiling_pm->material = &bp4;
   ceiling_pm->material->bool_reflection = false;  
   ceiling_pm->material->bool_refraction = false;
+  ceiling_pm->material->bool_specular = false;
 
   // create bubbles
   // lower bubble
@@ -435,6 +660,8 @@ int main(int argc, char *argv[])
   sphere->material = &bp2;
   sphere->material->bool_reflection = true;
   sphere->material->bool_refraction = true;
+  sphere->material->bool_specular = true;
+
   sphere->material->ior_object = 1.38f; // soap bubbles
   sphere->material->ior_surround = 1.0003f; // air
   //sphere->material->ior_object = 1.52f; // glass
@@ -463,6 +690,7 @@ int main(int argc, char *argv[])
 
   sphere2->material->bool_reflection = true;
   sphere2->material->bool_refraction = true;
+  sphere2->material->bool_specular = true;
   //sphere2->material->ior_object = 1.33f; // water
   sphere2->material->ior_object = 1.38f; // soap bubbles
   sphere2->material->ior_surround = 1.0003f; // air
@@ -490,6 +718,7 @@ int main(int argc, char *argv[])
 
   sphere3->material->bool_reflection = true;
   sphere3->material->bool_refraction = true;
+  sphere3->material->bool_specular = true;
   //sphere3->material->ior_object = 1.33f; // water
   sphere3->material->ior_object = 1.38f; // soap bubbles
   sphere3->material->ior_surround = 1.0003f; // air
@@ -518,45 +747,13 @@ int main(int argc, char *argv[])
   // y how much up or down
   // z into and out of the scene, more extemely into the scene = more positive
 
-  PointLight *pl = new PointLight(Vertex(-5.0f,2.0f,-10.0f), Colour(1.0f,1.0f,1.0f,0.0f));
+  PointLight *pl = new PointLight(Vertex(-5.0f,2.0f,-10.0f), Vector(0.5f, -0.2f, 1.0f) ,Colour(1.0f,1.0f,1.0f,0.0f));
 
-  // photon mapping here
-
-  // random number generator set up code, for random direction vectors
-  random_device rd;
-  mt19937 mt(rd());
-  uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) TODO define range
   
-  int n = 10; // number of photons TODO set number
-
-  // for n photons
-  for (int i=0; i<n; ++i){
-    // create photon
-    Photon p;
-
-    // send out into picture, meaning give photon direction vector
-    // create random direction vectors all across image
-
-    float p_x = dist(mt);
-    float p_y = dist(mt);
-    float p_z = dist(mt);
-
-    Vector photon_dir (p_x, p_y, p_z);
-    photon_dir.normalise();
-
-    p.set_dir(photon_dir);
-    //printf("%f , %f , %f\n",p_x, p_y, p_z);
-
-    // determine hit point (use intersection?) basically like raytrace?
-
-
-    // store hit position, type of photon (d/i/s), intensity of photon? in photon object in kdtree
-
-  } 
-
-
-
-
+  // photon mapping here
+  cast_photon(pl, pm);
+  printf("global photon map created");
+  
   for (int y = 0; y < height; y += 1)
   {
     for (int x = 0; x < width; x += 1)

@@ -1,19 +1,15 @@
 #include "vector.h"
 #include "colour.h"
-#include "hit.h"
+#include "object.h"
 
 
 class Photon{
 public :
     Vector direction;
+    Vertex position;
     Colour intensity;
-    Hit intersection;
-    string p_type;
-
-    Photon()
-    {
-       
-    }
+    Object *what;
+    char p_type;
 
     void set_intensity(Colour col)
     {
@@ -26,12 +22,7 @@ public :
         direction.normalise();
     }
 
-    void set_hit(Hit &hit)
-    {
-        intersection = hit;
-    }
-
-    void set_type(string type)
+    void set_type(char type)
     {
         p_type = type;
     }
