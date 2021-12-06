@@ -751,8 +751,8 @@ int main(int argc, char *argv[])
 
   
   // photon mapping here
-  cast_photon(pl, pm);
-  printf("global photon map created");
+  //cast_photon(pl, pm);
+  //printf("global photon map created");
   
   for (int y = 0; y < height; y += 1)
   {
