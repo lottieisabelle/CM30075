@@ -529,7 +529,6 @@ void cast_photon(Light *light, Object *objects)
   Hit *hit = new Hit();
   
   int n = 10000; // number of photons TODO set number
-  int p_e = 0;
 
   printf("photon casting:\n");
   
@@ -562,13 +561,10 @@ void cast_photon(Light *light, Object *objects)
     trace_photon(Ray(light_pos, photon_dir), p, objects, hit);
 
     //printf("!\n");
-    p_e += 1;
 
-    //printf("%d\n", i);
     float y = (float) i/n;
     y = y * 100;
     int z = (int) y;
-    //printf("%d\n", z);
     if(z%10 == 0){
       printf("%d%\n", z);
     }
