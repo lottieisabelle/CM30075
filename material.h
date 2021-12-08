@@ -44,6 +44,10 @@ public:
 		return 0.0f;
 	}
 
+	virtual float prob_spec(){
+		return 0.0f;
+	}
+
 	virtual Colour get_diffuse(){
 		return Colour (0,0,0,0);
 	}

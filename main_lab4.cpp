@@ -338,10 +338,8 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 {
   object_test(ray, objects, *hit);
 
-  //printf("hello");
-
   if(hit->flag){
-    printf("hello");
+    //printf("hit\n");
     p->position = hit->position;
     p->direction = ray.direction;
     p->what = hit->what;
@@ -372,7 +370,16 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
     // calculate probability of absorption or reflection (diffuse/specular) for hit material
     float random_num = (float) rand() / RAND_MAX;
+    float prob_diff = hit->what->material->prob_diff(); // probability value of diffuse reflection
+    float prob_spec = hit->what->material->prob_spec();
+    float prob_ref = prob_diff + prob_spec;
+    float prob_abs = 1 - prob_ref; // probability value of absorption
+    //printf("probability reflected: %f\n", prob_ref);
+    //printf("probability diffused: %f\n", prob_diff);
+    //printf("probability specular: %f\n", prob_spec);
+    //printf("probability absorbed: %f\n\n\n", prob_abs);
     
+    /*
     float prob_ref = hit->what->material->prob_ref(); //  probability value of any kind of reflection
     printf("probability reflected: %f\n", prob_ref);
     float prob_diff = hit->what->material->prob_diff(); // probability value of diffuse reflection
@@ -384,15 +391,18 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
     printf("probability specular: %f\n", prob_spec);
     float prob_abs = 1 - prob_ref; // probability value of absorption
     printf("probability absorbed: %f\n\n\n", prob_abs);
+    */
 
     // russian roulette
     if(random_num < prob_ref){ // if reflected
+      //printf("reflected\n");
       if(random_num < prob_diff){ // if diffuse reflected
+        //printf("diffused\n");
 
         // get random direction for a bounced ray
         // random number generator set up code, for random direction vectors
         Vector v_diffuse;
-
+        /*
         random_device rd;
         mt19937 mt(rd());
         uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) 
@@ -402,6 +412,20 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
           v_diffuse.z = dist(mt);
           v_diffuse.normalise();
         } while(v_diffuse.dot(hit->normal) < 0.5f);
+        */
+
+        // ((float)rand())/RAND_MAX * 100.0 - 50.0
+    
+        v_diffuse.x = (float) rand() / RAND_MAX * 2.0 - 1.0;
+        v_diffuse.y = (float) rand() / RAND_MAX * 2.0 - 1.0;
+        v_diffuse.z = (float) rand() / RAND_MAX * 2.0 - 1.0;
+        // generate new direction vector if the photon is going in the opposite direction to the normal of the surface
+        while(v_diffuse.dot(hit->normal) < 0.5f){
+          v_diffuse.x = (float) rand() / RAND_MAX * 2.0 - 1.0;
+          v_diffuse.y = (float) rand() / RAND_MAX * 2.0 - 1.0;
+          v_diffuse.z = (float) rand() / RAND_MAX * 2.0 - 1.0;
+          v_diffuse.normalise();
+        }
 
         // absorb colour of the hit
         Colour diffuse_col = hit->what->material->get_diffuse();
@@ -422,7 +446,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         trace_photon(Ray(new_pos, v_diffuse), ref_photon, objects, hit);
 
       } else if (random_num < prob_diff + prob_spec && hit->what->material->bool_specular){  // specular reflection
-
+        //printf("specular\n");
         Vector v_specular;
         hit->normal.reflection(ray.direction, v_specular);
 
@@ -442,11 +466,15 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         ref_photon->p_type = 'i';
 
         Vertex new_pos (hit->position.x + 0.0001 * v_specular.x, hit->position.y + 0.0001 * v_specular.y, hit->position.z + 0.0001 * v_specular.z);
+        //printf("debug 3\n");
         trace_photon(Ray(new_pos, v_specular), ref_photon, objects, hit);
+
+        //printf("debug 4\n");
 
       }
 
     } else if (random_num < prob_abs) { // if absorbed
+      //printf("absorbed\n");
       // if absorbed into refractive object, refract - otherwise do nothing
       if(hit->what->material->bool_refraction){
 
@@ -478,31 +506,36 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         refracted_photon->position = hit->position;
         refracted_photon->what = hit->what;
         refracted_photon->p_type = 'i';
+
+        //printf("debug 1\n");
         
         trace_photon(Ray(new_pos, v_refracted), refracted_photon, objects, hit);
+
+        //printf("debug 2\n");
 
       }
     }
 
   }
+  //printf("no hit\n");
 }
 
 void cast_photon(Light *light, Object *objects)
 {
   Vector light_dir = light->get_direction();
+  printf("light dir: %f, %f, %f\n", light_dir.x, light_dir.y, light_dir.z);
   Vertex light_pos = light->get_position();
 
   Hit *hit = new Hit();
-
-  // random number generator set up code, for random direction vectors
-  random_device rd;
-  mt19937 mt(rd());
-  uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) TODO define range
   
   int n = 10000; // number of photons TODO set number
+  int p_e = 0;
+
+  printf("photon casting:\n");
   
   // for n photons
   for (int i=0; i<n; ++i){
+    
     // create photon
     
     Photon *p = new Photon();
@@ -511,37 +544,32 @@ void cast_photon(Light *light, Object *objects)
     // create random direction vectors all across image
 
     Vector photon_dir;
-    Vector temp;
-
-    random_device rd;
-    mt19937 mt(rd());
-    uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) 
-    do {
-      photon_dir.x = dist(mt);
-      photon_dir.y = dist(mt);
-      photon_dir.z = dist(mt);
-      temp = photon_dir;
-      temp.normalise();
-      //photon_dir.normalise();
-    } while(temp.dot(light_dir) < 0.5f);
+    
+    photon_dir.x = (float) rand() / RAND_MAX * 2.0 - 1.0;
+    photon_dir.y = (float) rand() / RAND_MAX * 2.0 - 1.0;
+    photon_dir.z = (float) rand() / RAND_MAX * 2.0 - 1.0;
     // generate new direction vector if the photon is going in the opposite direction to the light
-
-    //printf("1");
-
-    //p->set_dir(photon_dir);
+    while(photon_dir.dot(light_dir) < 0.5f){
+      photon_dir.x = (float) rand() / RAND_MAX * 2.0 - 1.0;
+      photon_dir.y = (float) rand() / RAND_MAX * 2.0 - 1.0;
+      photon_dir.z = (float) rand() / RAND_MAX * 2.0 - 1.0;
+      photon_dir.normalise();
+    }
+    //printf("photon dir: %f, %f, %f\n", photon_dir.x, photon_dir.y, photon_dir.z);
     
-    p->direction = photon_dir;
-
-    //printf("2");
-    
+    p->direction = photon_dir;    
 
     trace_photon(Ray(light_pos, photon_dir), p, objects, hit);
 
-    printf("!");
+    printf("!\n");
+    p_e += 1;
 
-    //int z = (i/n) *100;
-    //if ((z > 0) && (z%10 == 0)){
-    //  printf("%f%\n", z);
+    printf("%d", i);
+    
+    //y = y * 100;
+    //int z = (int) y;
+    //if(z%10 == 0){
+      //printf("%d percent", z);
     //}
 
   } 
@@ -567,14 +595,14 @@ int main(int argc, char *argv[])
   // create material properties for teapot
   Phong bp1;
 	bp1.ambient.r = 0.0f;
-	bp1.ambient.g = 0.9f;
-	bp1.ambient.b = 0.9f;
+	bp1.ambient.g = 0.6f; // 0.6 was 0.9
+	bp1.ambient.b = 0.6f;
 	bp1.diffuse.r = 0.0f;
-	bp1.diffuse.g = 0.9f;
-	bp1.diffuse.b = 0.9f;
-	bp1.specular.r = 0.4f;
-	bp1.specular.g = 0.4f;
-	bp1.specular.b = 0.4f;
+	bp1.diffuse.g = 0.6f;
+	bp1.diffuse.b = 0.6f;
+	bp1.specular.r = 0.3f; // 0.3 was 0.4
+	bp1.specular.g = 0.3f;
+	bp1.specular.b = 0.3f;
 	bp1.power = 40.0f;
 
 	pm->material = &bp1;
@@ -599,36 +627,36 @@ int main(int argc, char *argv[])
   PolyMesh *ceiling_pm = new PolyMesh((char *)"ceiling.ply", transform2);
 
   Phong bp4;
-  bp4.ambient.r = 1.0f;
-	bp4.ambient.g = 0.7f;
-	bp4.ambient.b = 1.0f;
-	bp4.diffuse.r = 1.0f;
-	bp4.diffuse.g = 0.7f;
-	bp4.diffuse.b = 1.0f;
+  bp4.ambient.r = 0.7f; // 0.7 was 1.0
+	bp4.ambient.g = 0.4f; // 0.4 was 0.7
+	bp4.ambient.b = 0.7f;
+	bp4.diffuse.r = 0.7f;
+	bp4.diffuse.g = 0.4f;
+	bp4.diffuse.b = 0.7f;
 	bp4.specular.r = 0.2f;
 	bp4.specular.g = 0.2f;
 	bp4.specular.b = 0.2f;
 	bp4.power = 40.0f;
 
   Phong bp5;
-  bp5.ambient.r = 0.5f;
+  bp5.ambient.r = 0.5f; 
 	bp5.ambient.g = 0.0f;
-	bp5.ambient.b = 1.0f;
+	bp5.ambient.b = 0.7f; // 0.7 was 1.0
 	bp5.diffuse.r = 0.5f;
 	bp5.diffuse.g = 0.0f;
-	bp5.diffuse.b = 1.0f;
+	bp5.diffuse.b = 0.7f;
 	bp5.specular.r = 0.2f;
 	bp5.specular.g = 0.2f;
 	bp5.specular.b = 0.2f;
 	bp5.power = 40.0f;
 
   Phong bp6;
-  bp6.ambient.r = 1.0f;
-	bp6.ambient.g = 1.0f;
-	bp6.ambient.b = 1.0f;
-	bp6.diffuse.r = 1.0f;
-	bp6.diffuse.g = 1.0f;
-	bp6.diffuse.b = 1.0f;
+  bp6.ambient.r = 0.7f; // 0.7 was 1.0
+	bp6.ambient.g = 0.7f;
+	bp6.ambient.b = 0.7f;
+	bp6.diffuse.r = 0.7f;
+	bp6.diffuse.g = 0.7f;
+	bp6.diffuse.b = 0.7f;
 	bp6.specular.r = 0.2f;
 	bp6.specular.g = 0.2f;
 	bp6.specular.b = 0.2f;
@@ -673,15 +701,15 @@ int main(int argc, char *argv[])
   
   Sphere *sphere = new Sphere(v, 0.4);
   Phong bp2;
-  bp2.ambient.r = 0.6f;
-	bp2.ambient.g = 0.6f;
-	bp2.ambient.b = 0.6f;
-	bp2.diffuse.r = 0.6f;
-	bp2.diffuse.g = 0.6f;
-	bp2.diffuse.b = 0.6f;
-	bp2.specular.r = 0.4f;
-	bp2.specular.g = 0.4f;
-	bp2.specular.b = 0.4f;
+  bp2.ambient.r = 0.5f; // 0.5 was 0.6
+	bp2.ambient.g = 0.5f;
+	bp2.ambient.b = 0.5f;
+	bp2.diffuse.r = 0.5f;
+	bp2.diffuse.g = 0.5f;
+	bp2.diffuse.b = 0.5f;
+	bp2.specular.r = 0.3f; // 0.3 was 0.4
+	bp2.specular.g = 0.3f;
+	bp2.specular.b = 0.3f;
 	bp2.power = 40.0f;
 
   sphere->material = &bp2;
@@ -702,15 +730,15 @@ int main(int argc, char *argv[])
   
   Sphere *sphere2 = new Sphere(v2,0.6f);
   Phong bp3;
-  bp3.ambient.r = 0.6f;
-	bp3.ambient.g = 0.6f;
-	bp3.ambient.b = 0.6f;
-	bp3.diffuse.r = 0.6f;
-	bp3.diffuse.g = 0.6f;
-	bp3.diffuse.b = 0.6f;
-	bp3.specular.r = 0.4f;
-	bp3.specular.g = 0.4f;
-	bp3.specular.b = 0.4f;
+  bp3.ambient.r = 0.5f; // 0.5 was 0.6
+	bp3.ambient.g = 0.5f;
+	bp3.ambient.b = 0.5f;
+	bp3.diffuse.r = 0.5f;
+	bp3.diffuse.g = 0.5f;
+	bp3.diffuse.b = 0.5f;
+	bp3.specular.r = 0.3f; // 0.3 was 0.4
+	bp3.specular.g = 0.3f;
+	bp3.specular.b = 0.3f;
 	bp3.power = 40.0f;
 
  	sphere2->material = &bp3;
@@ -730,15 +758,15 @@ int main(int argc, char *argv[])
   
   Sphere *sphere3 = new Sphere(v3,0.6f);
   Phong bp7;
-  bp7.ambient.r = 0.6f;
-	bp7.ambient.g = 0.6f;
-	bp7.ambient.b = 0.6f;
-	bp7.diffuse.r = 0.6f;
-	bp7.diffuse.g = 0.6f;
-	bp7.diffuse.b = 0.6f;
-	bp7.specular.r = 0.4f;
-	bp7.specular.g = 0.4f;
-	bp7.specular.b = 0.4f;
+  bp7.ambient.r = 0.5f; // 0.5 was 0.6
+	bp7.ambient.g = 0.5f;
+	bp7.ambient.b = 0.5f;
+	bp7.diffuse.r = 0.5f;
+	bp7.diffuse.g = 0.5f;
+	bp7.diffuse.b = 0.5f;
+	bp7.specular.r = 0.3f; // 0.3 was 0.4
+	bp7.specular.g = 0.3f;
+	bp7.specular.b = 0.3f;
 	bp7.power = 40.0f;
 
  	sphere3->material = &bp7;

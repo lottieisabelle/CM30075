@@ -29,4 +29,6 @@ public:
 	float prob_diff();
 
 	float prob_ref();
+
+	float prob_spec();
 };

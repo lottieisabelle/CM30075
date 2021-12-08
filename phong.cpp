@@ -72,10 +72,19 @@ void Phong::compute_light_colour(Vector &viewer, Vector &normal, Vector &ldir, C
 }
 
 float Phong::prob_diff(){
-	float prob_ref = std::max((diffuse.r +specular.r), (diffuse.g + specular.g));
-	prob_ref = std::max(prob_ref, (diffuse.b + specular.b));
-	float prob_diff = ((diffuse.r + diffuse.g + diffuse.b) / (diffuse.r + diffuse.g + diffuse.b + specular.r + specular.g + specular.b)) * prob_ref;
+	float prob_diff = std::max(diffuse.r, diffuse.g);
+	prob_diff = std::max(prob_diff, diffuse.b);
+
+	//float prob_ref = std::max((diffuse.r +specular.r), (diffuse.g + specular.g));
+	//prob_ref = std::max(prob_ref, (diffuse.b + specular.b));
+	//float prob_diff = ((diffuse.r + diffuse.g + diffuse.b) / (diffuse.r + diffuse.g + diffuse.b + specular.r + specular.g + specular.b)) * prob_ref;
 	return prob_diff;	
+}
+
+float Phong::prob_spec(){
+	float prob_spec = std::max(specular.r, specular.g);
+	prob_spec = std::max(prob_spec, specular.b);
+	return prob_spec;
 }
 
 float Phong::prob_ref(){
