@@ -8,6 +8,7 @@
 #include "phong.h"
 
 #include <math.h>
+#include <algorithm> 
 
 // A simple Phong based lighting model
 
@@ -70,3 +71,15 @@ void Phong::compute_light_colour(Vector &viewer, Vector &normal, Vector &ldir, C
 	}
 }
 
+float Phong::prob_diff(){
+	float prob_ref = std::max((diffuse.r +specular.r), (diffuse.g + specular.g));
+	prob_ref = std::max(prob_ref, (diffuse.b + specular.b));
+	float prob_diff = ((diffuse.r + diffuse.g + diffuse.b) / (diffuse.r + diffuse.g + diffuse.b + specular.r + specular.g + specular.b)) * prob_ref;
+	return prob_diff;	
+}
+
+float Phong::prob_ref(){
+	float prob_ref = std::max((diffuse.r +specular.r), (diffuse.g + specular.g));
+	prob_ref = std::max(prob_ref, (diffuse.b + specular.b));
+	return prob_ref;
+}

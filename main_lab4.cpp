@@ -34,7 +34,7 @@
 #include "plane.h"
 #include "photon.h"
 #include "point_light.h"
-// 3rd party kd tree
+// 3rd party kd tree : TODO reference 
 #include "kd-master/src/core.h"
 #include "kd-master/src/tree.h"
 
@@ -338,7 +338,10 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 {
   object_test(ray, objects, *hit);
 
+  //printf("hello");
+
   if(hit->flag){
+    printf("hello");
     p->position = hit->position;
     p->direction = ray.direction;
     p->what = hit->what;
@@ -358,26 +361,34 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
     // if shadow photon hits a new object that creates a shadow (i.e. not refractive ones) store hit now
     if(shadow_hit.flag && !shadow_hit.what->material->bool_refraction){
-      Photon *shadow_photon;
+      Photon *shadow_photon = new Photon();
       shadow_photon->direction = shadow_ray.direction;
       shadow_photon->position = shadow_hit.position;
       shadow_photon->intensity = Colour (0,0,0,0);
       shadow_photon->what = shadow_hit.what;
       shadow_photon->p_type = 's';
-      global_tree.insert(shadow_photon);
+      global_tree.insert(shadow_photon); 
     }
 
-    // calculate probability of absorption, diffuse/specular reflection for hit material
+    // calculate probability of absorption or reflection (diffuse/specular) for hit material
     float random_num = (float) rand() / RAND_MAX;
-    float prob_diff = hit->what->material->prob_diff();
-    float prob_ref = hit->what->material->max();
+    
+    float prob_ref = hit->what->material->prob_ref(); //  probability value of any kind of reflection
+    printf("probability reflected: %f\n", prob_ref);
+    float prob_diff = hit->what->material->prob_diff(); // probability value of diffuse reflection
+    printf("probability diffused: %f\n", prob_diff);
     prob_diff *= prob_ref;
-    float prob_spec = prob_ref - prob_diff; // for caustic photons
-    float prob_abs = 1 - prob_ref;
+    printf("probability diffused: %f\n", prob_diff);
+    
+    float prob_spec = prob_ref - prob_diff; // probability value of specular reflection (for caustic photons)
+    printf("probability specular: %f\n", prob_spec);
+    float prob_abs = 1 - prob_ref; // probability value of absorption
+    printf("probability absorbed: %f\n\n\n", prob_abs);
 
     // russian roulette
-    if(random_num < prob_ref){
-      if(random_num < prob_diff){
+    if(random_num < prob_ref){ // if reflected
+      if(random_num < prob_diff){ // if diffuse reflected
+
         // get random direction for a bounced ray
         // random number generator set up code, for random direction vectors
         Vector v_diffuse;
@@ -400,7 +411,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         intensity.scale(tempColD);
 
         // create the new diffusely reflected photon and trace
-        Photon *ref_photon;
+        Photon *ref_photon = new Photon();
         ref_photon->position = hit->position;
         ref_photon->direction = ray.direction;
         ref_photon->intensity = intensity;
@@ -423,7 +434,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         intensity.scale(tempColS);
 
         // create the new diffusely reflected photon and trace
-        Photon *ref_photon;
+        Photon *ref_photon = new Photon();
         ref_photon->position = hit->position;
         ref_photon->direction = ray.direction;
         ref_photon->intensity = intensity;
@@ -435,7 +446,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
       }
 
-    } else if (random_num < prob_abs) {
+    } else if (random_num < prob_abs) { // if absorbed
       // if absorbed into refractive object, refract - otherwise do nothing
       if(hit->what->material->bool_refraction){
 
@@ -462,7 +473,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         v_refracted.normalise();
 
         Vertex new_pos (hit->position.x + 0.0001 * v_refracted.x, hit->position.y + 0.0001 * v_refracted.y, hit->position.z + 0.0001 * v_refracted.z);
-        Photon *refracted_photon;
+        Photon *refracted_photon = new Photon();
         refracted_photon->direction = ray.direction;
         refracted_photon->position = hit->position;
         refracted_photon->what = hit->what;
@@ -494,12 +505,13 @@ void cast_photon(Light *light, Object *objects)
   for (int i=0; i<n; ++i){
     // create photon
     
-    Photon *p;
+    Photon *p = new Photon();
 
     // send out into picture, meaning give photon direction vector
     // create random direction vectors all across image
 
     Vector photon_dir;
+    Vector temp;
 
     random_device rd;
     mt19937 mt(rd());
@@ -508,17 +520,32 @@ void cast_photon(Light *light, Object *objects)
       photon_dir.x = dist(mt);
       photon_dir.y = dist(mt);
       photon_dir.z = dist(mt);
-      photon_dir.normalise();
-    } while(photon_dir.dot(light_dir) < 0.5f);
+      temp = photon_dir;
+      temp.normalise();
+      //photon_dir.normalise();
+    } while(temp.dot(light_dir) < 0.5f);
+    // generate new direction vector if the photon is going in the opposite direction to the light
 
-    printf("boo");
+    //printf("1");
+
+    //p->set_dir(photon_dir);
     
     p->direction = photon_dir;
+
+    //printf("2");
     
 
     trace_photon(Ray(light_pos, photon_dir), p, objects, hit);
 
+    printf("!");
+
+    //int z = (i/n) *100;
+    //if ((z > 0) && (z%10 == 0)){
+    //  printf("%f%\n", z);
+    //}
+
   } 
+
 }
 
 int main(int argc, char *argv[])
@@ -751,7 +778,7 @@ int main(int argc, char *argv[])
 
   
   // photon mapping here
-  //cast_photon(pl, pm);
+  cast_photon(pl, pm);
   //printf("global photon map created");
   
   for (int y = 0; y < height; y += 1)

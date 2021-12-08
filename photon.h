@@ -1,15 +1,22 @@
+#pragma once
+
 #include "vector.h"
 #include "colour.h"
 #include "object.h"
 
 
-class Photon{
+class Photon {
 public :
     Vector direction;
     Vertex position;
     Colour intensity;
     Object *what;
     char p_type;
+
+    Photon()
+    {
+
+    }
 
     void set_intensity(Colour col)
     {
@@ -19,7 +26,7 @@ public :
     void set_dir(Vector dir)
     {
         direction = dir;
-        direction.normalise();
+        //direction.normalise();
     }
 
     void set_type(char type)

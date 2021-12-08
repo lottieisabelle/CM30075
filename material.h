@@ -40,7 +40,7 @@ public:
 		return 0.0f;
 	}
 
-	virtual float max(){
+	virtual float prob_ref(){
 		return 0.0f;
 	}
 
