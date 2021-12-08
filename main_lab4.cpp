@@ -561,10 +561,17 @@ void cast_photon(Light *light, Object *objects)
 
     trace_photon(Ray(light_pos, photon_dir), p, objects, hit);
 
-    printf("!\n");
+    //printf("!\n");
     p_e += 1;
 
-    printf("%d", i);
+    //printf("%d\n", i);
+    float y = (float) i/n;
+    y = y * 100;
+    int z = (int) y;
+    //printf("%d\n", z);
+    if(z%10 == 0){
+      printf("%d%\n", z);
+    }
     
     //y = y * 100;
     //int z = (int) y;
