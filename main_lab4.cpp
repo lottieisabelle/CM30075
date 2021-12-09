@@ -160,6 +160,36 @@ void object_test(Ray ray, Object *objects, Hit &best_hit)
   return;
 }
 
+void trace(Ray ray, Object *objects, Hit &hit)
+{
+	Hit current_hit;
+
+	hit.flag = false;
+	hit.t = 0.0f;
+	hit.what = 0;
+
+	while (objects != 0)
+	{
+		Hit hit_current;
+
+		objects->intersection(ray, hit_current);
+
+		if (hit_current.flag == true)
+		{
+			if (hit.flag == false)
+			{
+				hit = hit_current;
+
+			} else if (hit_current.t < hit.t)
+			{
+				hit = hit_current;
+			}
+		}
+
+		objects = objects->next;
+	}
+}
+
 void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &depth, int d)
 {
   if (d <= 0){
@@ -343,10 +373,12 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
     p->position = hit->position;
     p->direction = ray.direction;
     p->what = hit->what;
+    // needs intensity value?
+
     // photon normal?
     global_tree.insert(p);
 
-    // send shadow photons
+    // send shadow photon
     Ray shadow_ray;
     Hit shadow_hit;
     shadow_ray.direction = ray.direction;
@@ -370,52 +402,24 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
     // calculate probability of absorption or reflection (diffuse/specular) for hit material
     float random_num = (float) rand() / RAND_MAX;
+    //printf("  %f  ", random_num);
     float prob_diff = hit->what->material->prob_diff(); // probability value of diffuse reflection
     float prob_spec = hit->what->material->prob_spec();
     float prob_ref = prob_diff + prob_spec;
     float prob_abs = 1 - prob_ref; // probability value of absorption
-    //printf("probability reflected: %f\n", prob_ref);
-    //printf("probability diffused: %f\n", prob_diff);
-    //printf("probability specular: %f\n", prob_spec);
-    //printf("probability absorbed: %f\n\n\n", prob_abs);
     
-    /*
-    float prob_ref = hit->what->material->prob_ref(); //  probability value of any kind of reflection
-    printf("probability reflected: %f\n", prob_ref);
-    float prob_diff = hit->what->material->prob_diff(); // probability value of diffuse reflection
-    printf("probability diffused: %f\n", prob_diff);
-    prob_diff *= prob_ref;
-    printf("probability diffused: %f\n", prob_diff);
-    
-    float prob_spec = prob_ref - prob_diff; // probability value of specular reflection (for caustic photons)
-    printf("probability specular: %f\n", prob_spec);
-    float prob_abs = 1 - prob_ref; // probability value of absorption
-    printf("probability absorbed: %f\n\n\n", prob_abs);
-    */
 
     // russian roulette
     if(random_num < prob_ref){ // if reflected
       //printf("reflected\n");
       if(random_num < prob_diff){ // if diffuse reflected
-        //printf("diffused\n");
+        //printf("d");
 
         // get random direction for a bounced ray
         // random number generator set up code, for random direction vectors
         Vector v_diffuse;
-        /*
-        random_device rd;
-        mt19937 mt(rd());
-        uniform_real_distribution<double> dist(0.0, 1.0); //range defined here (inclusive) 
-        do {
-          v_diffuse.x = dist(mt);
-          v_diffuse.y = dist(mt);
-          v_diffuse.z = dist(mt);
-          v_diffuse.normalise();
-        } while(v_diffuse.dot(hit->normal) < 0.5f);
-        */
-
-        // ((float)rand())/RAND_MAX * 100.0 - 50.0
-    
+        
+        // random numnbers between -1 and 1
         v_diffuse.x = (float) rand() / RAND_MAX * 2.0 - 1.0;
         v_diffuse.y = (float) rand() / RAND_MAX * 2.0 - 1.0;
         v_diffuse.z = (float) rand() / RAND_MAX * 2.0 - 1.0;
@@ -445,8 +449,8 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         Vertex new_pos (hit->position.x + 0.0001 * v_diffuse.x, hit->position.y + 0.0001 * v_diffuse.y, hit->position.z + 0.0001 * v_diffuse.z);
         trace_photon(Ray(new_pos, v_diffuse), ref_photon, objects, hit);
 
-      } else if (random_num < prob_diff + prob_spec && hit->what->material->bool_specular){  // specular reflection
-        //printf("specular\n");
+      } else if (random_num < prob_ref && hit->what->material->bool_specular){  // specular reflection
+        //printf("s");
         Vector v_specular;
         hit->normal.reflection(ray.direction, v_specular);
 
@@ -473,8 +477,8 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
       }
 
-    } else if (random_num < prob_abs) { // if absorbed
-      //printf("absorbed\n");
+    } else if (random_num > prob_ref && random_num < 1) { // if absorbed
+      //printf("a");
       // if absorbed into refractive object, refract - otherwise do nothing
       if(hit->what->material->bool_refraction){
 
@@ -520,10 +524,10 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
   //printf("no hit\n");
 }
 
-void cast_photon(Light *light, Object *objects)
+void cast_photons(Light *light, Object *objects)
 {
   Vector light_dir = light->get_direction();
-  printf("light dir: %f, %f, %f\n", light_dir.x, light_dir.y, light_dir.z);
+  //printf("light dir: %f, %f, %f\n", light_dir.x, light_dir.y, light_dir.z);
   Vertex light_pos = light->get_position();
 
   Hit *hit = new Hit();
@@ -536,12 +540,10 @@ void cast_photon(Light *light, Object *objects)
   for (int i=0; i<n; ++i){
     
     // create photon
-    
     Photon *p = new Photon();
 
     // send out into picture, meaning give photon direction vector
     // create random direction vectors all across image
-
     Vector photon_dir;
     
     photon_dir.x = (float) rand() / RAND_MAX * 2.0 - 1.0;
@@ -568,21 +570,62 @@ void cast_photon(Light *light, Object *objects)
     if(z%10 == 0){
       printf("%d%\n", z);
     }
-    
-    //y = y * 100;
-    //int z = (int) y;
-    //if(z%10 == 0){
-      //printf("%d percent", z);
-    //}
 
   } 
 
 }
 
+Colour radiance(Hit &hit)
+{
+  // get n nearest photons at a point
+  //add all of their intensity values together
+  //divide by the area they cover - using the radius of the area of the photons
+  //calc distance and stuff
+  // multiply by ambience values of the object thats been hit
+
+  // what number of photons needed within sphere? trial and error
+  // what radius value?
+  // r = radius of the sphere, largest distance between point and a photon
+
+  
+  float radius = 1.0;
+  float count = 50;
+  printf("DEBUG 1");
+  //std::vector<Photon*> photons;
+  vector<Photon*> photons;
+  photons = global_tree.nearest(hit.position, count);
+  printf("DEBUG 2");
+  //photons = global_tree.within(Point(hit.position.x, hit.position.y, hit.position.z), radius);
+  printf("DEBUG 3");
+  //float count;
+  printf("DEBUG 4");
+  //count = photons.size();
+  printf("DEBUG 5");
+
+  return Colour(0,0,0,0);
+
+  // ask for n photons using nearest
+  // calculate radius r from furthest photon
+
+
+
+  // get n (number of nearest photons) within radius r
+  // while n is less than x (a value to be determined)
+  // increase r until satisfied with number of photons in sphere
+
+  // add up intensity values of all n photons
+  // divide by the area covered (calculate with r value)
+
+  // multiply colour by ambience values of hit object
+
+  // return colour 
+
+}
+
 int main(int argc, char *argv[])
 {
-  int width = 256;
-  int height = 256;
+  int width = 128;
+  int height = 128;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -809,8 +852,12 @@ int main(int argc, char *argv[])
 
   
   // photon mapping here
-  cast_photon(pl, pm);
+  cast_photons(pl, pm);
   //printf("global photon map created");
+
+
+  
+  
   
   for (int y = 0; y < height; y += 1)
   {
@@ -834,12 +881,20 @@ int main(int argc, char *argv[])
 
       // uses point light pl, change to dl to use directional light
       raytrace(ray, pm, pl, colour, depth, d);
+      Hit h;
+      trace(ray, pm, h);
+      Colour col = radiance(h);
+      // call radiance on hit point
+      // get colour value for pixel
+      // plot pixel
 
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
       //fb->plotDepth(x,y, depth);
     }
 
-    cerr << "*" << flush;
+    //printf("*");
+
+    //cerr << "*" << flush;
   }
 
   // blur middle line maybe
