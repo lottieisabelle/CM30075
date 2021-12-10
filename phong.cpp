@@ -92,3 +92,9 @@ float Phong::prob_ref(){
 	prob_ref = std::max(prob_ref, (diffuse.b + specular.b));
 	return prob_ref;
 }
+
+void Phong::get_diffuse(Colour &result){
+	result.r = diffuse.r;
+	result.g = diffuse.g;
+	result.b = diffuse.b;
+}

@@ -48,8 +48,11 @@ public:
 		return 0.0f;
 	}
 
-	virtual Colour get_diffuse(){
-		return Colour (0,0,0,0);
+	virtual void get_diffuse(Colour &result)
+	{
+		result.r = 0.0f;
+		result.g = 0.0f;
+		result.b = 0.0f;
 	}
 
 	virtual Colour get_specular(){

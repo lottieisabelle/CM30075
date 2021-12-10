@@ -31,4 +31,6 @@ public:
 	float prob_ref();
 
 	float prob_spec();
+
+	void get_diffuse(Colour &result);
 };

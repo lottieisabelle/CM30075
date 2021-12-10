@@ -432,7 +432,9 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         }
 
         // absorb colour of the hit
-        Colour diffuse_col = hit->what->material->get_diffuse();
+
+        Colour diffuse_col;
+        hit->what->material->get_diffuse(diffuse_col);
         Colour intensity = p->intensity;
         intensity.scale(diffuse_col);
         Colour tempColD = Colour (1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff);
@@ -587,20 +589,62 @@ Colour radiance(Hit &hit)
   // what radius value?
   // r = radius of the sphere, largest distance between point and a photon
 
-  
-  float radius = 1.0;
   float count = 50;
-  printf("DEBUG 1");
-  //std::vector<Photon*> photons;
+  
   vector<Photon*> photons;
   photons = global_tree.nearest(hit.position, count);
-  printf("DEBUG 2");
-  //photons = global_tree.within(Point(hit.position.x, hit.position.y, hit.position.z), radius);
-  printf("DEBUG 3");
-  //float count;
-  printf("DEBUG 4");
-  //count = photons.size();
-  printf("DEBUG 5");
+
+  int shadow_photons;
+  int illuminated_photons;
+  // detwrmine how many photons are shadow photons (s) or illuminated photons (d or i)
+  for(int i=0; i<count; ++i){
+    if(photons[i]->p_type == 's'){
+      shadow_photons+=1;
+    } else {
+      illuminated_photons+=1;
+    }
+  }
+
+  // determine brightness multiplier
+  float visibility = 1;
+  if(shadow_photons!=0){
+    visibility = shadow_photons / (shadow_photons+illuminated_photons);
+  }
+
+  Vertex furthest;
+  furthest = photons.back()->position;
+
+  // calculate distance between hit.position and furthest point
+  float xSqr = (hit.position.x - furthest.x) * (hit.position.x - furthest.x);
+  float ySqr = (hit.position.y - furthest.y) * (hit.position.y - furthest.y);
+  float zSqr = (hit.position.z - furthest.z) * (hit.position.z - furthest.z);
+  float radius = sqrt(xSqr + ySqr + zSqr);
+  
+  float area = _Pi*radius*radius;
+
+  Colour col_ambient;
+  hit.what->material->compute_base_colour(col_ambient);
+
+  Colour col_diffuse;
+  hit.what->material->get_diffuse(col_diffuse);
+
+  for(int i=0; i<count; ++i){
+    col_diffuse.add(photons[i]->intensity);
+  }
+   // if really really dark in ambient (in shadow) increase constant value for scaling
+  int constant = 10;
+  // scale colour values by visibility and area
+  col_diffuse.r = visibility * ((col_diffuse.r / area) / constant);
+  col_diffuse.g = visibility * ((col_diffuse.g / area) / constant);
+  col_diffuse.b = visibility * ((col_diffuse.b / area) / constant);
+
+  
+  // TODO : in phong split compute light colour into compute diffuse light and compute specular light
+  
+  // raytracing the same for photon mapping lighting EXCEPT for diffuse light
+  // ambient and specular is the same
+  
+  
 
   return Colour(0,0,0,0);
 
