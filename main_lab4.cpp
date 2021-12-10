@@ -579,18 +579,8 @@ void cast_photons(Light *light, Object *objects)
 
 Colour radiance(Hit &hit)
 {
-  // get n nearest photons at a point
-  //add all of their intensity values together
-  //divide by the area they cover - using the radius of the area of the photons
-  //calc distance and stuff
-  // multiply by ambience values of the object thats been hit
-
-  // what number of photons needed within sphere? trial and error
-  // what radius value?
-  // r = radius of the sphere, largest distance between point and a photon
-
   float count = 50;
-  
+  // get n nearest photons at hit point
   vector<Photon*> photons;
   photons = global_tree.nearest(hit.position, count);
 
@@ -605,7 +595,7 @@ Colour radiance(Hit &hit)
     }
   }
 
-  // determine brightness multiplier
+  // determine brightness multiplier depending on number of shadow photons
   float visibility = 1;
   if(shadow_photons!=0){
     visibility = shadow_photons / (shadow_photons+illuminated_photons);
@@ -628,6 +618,7 @@ Colour radiance(Hit &hit)
   Colour col_diffuse;
   hit.what->material->get_diffuse(col_diffuse);
 
+  // add all photon intensity values together
   for(int i=0; i<count; ++i){
     col_diffuse.add(photons[i]->intensity);
   }
@@ -639,6 +630,7 @@ Colour radiance(Hit &hit)
   col_diffuse.b = visibility * ((col_diffuse.b / area) / constant);
 
   
+
   // TODO : in phong split compute light colour into compute diffuse light and compute specular light
   
   // raytracing the same for photon mapping lighting EXCEPT for diffuse light
