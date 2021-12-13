@@ -22,6 +22,8 @@
  * You are expected to fill in the missing code in polymesh.cpp.
  */
 
+#define _USE_MATH_DEFINES 
+
 #include "framebuffer.h"
 #include "ray.h"
 #include "hit.h"
@@ -373,9 +375,6 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
     p->position = hit->position;
     p->direction = ray.direction;
     p->what = hit->what;
-    // needs intensity value?
-
-    // photon normal?
     global_tree.insert(p);
 
     // send shadow photon
@@ -394,7 +393,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
       Photon *shadow_photon = new Photon();
       shadow_photon->direction = shadow_ray.direction;
       shadow_photon->position = shadow_hit.position;
-      shadow_photon->intensity = Colour (0,0,0,0);
+      shadow_photon->intensity = Colour(1,1,1,1);
       shadow_photon->what = shadow_hit.what;
       shadow_photon->p_type = 's';
       global_tree.insert(shadow_photon); 
@@ -433,19 +432,18 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
         // absorb colour of the hit
 
+        /*
         Colour diffuse_col;
         hit->what->material->get_diffuse(diffuse_col);
         Colour intensity = p->intensity;
         intensity.scale(diffuse_col);
         Colour tempColD = Colour (1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff);
         intensity.scale(tempColD);
+        */
 
         // create the new diffusely reflected photon and trace
         Photon *ref_photon = new Photon();
-        ref_photon->position = hit->position;
-        ref_photon->direction = ray.direction;
-        ref_photon->intensity = intensity;
-        ref_photon->what = hit->what;
+        ref_photon->intensity = Colour(1,1,1,1);
         ref_photon->p_type = 'i';
 
         Vertex new_pos (hit->position.x + 0.0001 * v_diffuse.x, hit->position.y + 0.0001 * v_diffuse.y, hit->position.z + 0.0001 * v_diffuse.z);
@@ -457,25 +455,21 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         hit->normal.reflection(ray.direction, v_specular);
 
         // absorb colour of the hit
+        /*
         Colour specular_col = hit->what->material->get_specular();
         Colour intensity = p->intensity;
         intensity.scale(specular_col);
         Colour tempColS = Colour (1.0f/prob_spec, 1.0f/prob_spec, 1.0f/prob_spec, 1.0f/prob_spec);
         intensity.scale(tempColS);
+        */
 
         // create the new diffusely reflected photon and trace
         Photon *ref_photon = new Photon();
-        ref_photon->position = hit->position;
-        ref_photon->direction = ray.direction;
-        ref_photon->intensity = intensity;
-        ref_photon->what = hit->what;
+        ref_photon->intensity = Colour(1,1,1,1);;
         ref_photon->p_type = 'i';
 
         Vertex new_pos (hit->position.x + 0.0001 * v_specular.x, hit->position.y + 0.0001 * v_specular.y, hit->position.z + 0.0001 * v_specular.z);
-        //printf("debug 3\n");
         trace_photon(Ray(new_pos, v_specular), ref_photon, objects, hit);
-
-        //printf("debug 4\n");
 
       }
 
@@ -508,16 +502,10 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
         Vertex new_pos (hit->position.x + 0.0001 * v_refracted.x, hit->position.y + 0.0001 * v_refracted.y, hit->position.z + 0.0001 * v_refracted.z);
         Photon *refracted_photon = new Photon();
-        refracted_photon->direction = ray.direction;
-        refracted_photon->position = hit->position;
-        refracted_photon->what = hit->what;
         refracted_photon->p_type = 'i';
-
-        //printf("debug 1\n");
+        refracted_photon->intensity = Colour(1,1,1,1);
         
         trace_photon(Ray(new_pos, v_refracted), refracted_photon, objects, hit);
-
-        //printf("debug 2\n");
 
       }
     }
@@ -537,12 +525,16 @@ void cast_photons(Light *light, Object *objects)
   int n = 10000; // number of photons TODO set number
 
   printf("photon casting:\n");
+
+  int increment = 10;
   
   // for n photons
   for (int i=0; i<n; ++i){
     
     // create photon
     Photon *p = new Photon();
+    p->intensity = Colour(1,1,1,1);
+    p->p_type = 'd';
 
     // send out into picture, meaning give photon direction vector
     // create random direction vectors all across image
@@ -566,18 +558,19 @@ void cast_photons(Light *light, Object *objects)
 
     //printf("!\n");
 
-    float y = (float) i/n;
-    y = y * 100;
+    float y = ((float) i) / ((float) n);
+    y = y * 100.0;
     int z = (int) y;
-    if(z%10 == 0){
+    if(z == increment){
       printf("%d%\n", z);
+      increment += 10;
     }
 
   } 
 
 }
 
-Colour radiance(Hit &hit)
+Colour radiance(Hit &hit, Ray ray, Light *light)
 {
   float count = 50;
   // get n nearest photons at hit point
@@ -610,13 +603,20 @@ Colour radiance(Hit &hit)
   float zSqr = (hit.position.z - furthest.z) * (hit.position.z - furthest.z);
   float radius = sqrt(xSqr + ySqr + zSqr);
   
-  float area = _Pi*radius*radius;
+  float area = M_PI*radius*radius;
 
   Colour col_ambient;
   hit.what->material->compute_base_colour(col_ambient);
 
+  Vector ldir = light->get_direction();
+  Vector viewer = ray.direction;
+
   Colour col_diffuse;
   hit.what->material->get_diffuse(col_diffuse);
+
+  Colour col_specular = hit.what->material->get_specular();
+
+  
 
   // add all photon intensity values together
   for(int i=0; i<count; ++i){
@@ -625,10 +625,18 @@ Colour radiance(Hit &hit)
    // if really really dark in ambient (in shadow) increase constant value for scaling
   int constant = 10;
   // scale colour values by visibility and area
+  //col_diffuse.r = visibility * (col_ambient.r + ((col_diffuse.r / area) / constant));
+  //col_diffuse.g = visibility * (col_ambient.g + ((col_diffuse.g / area) / constant));
+  //col_diffuse.b = visibility * (col_ambient.b + ((col_diffuse.b / area) / constant));
+
+
   col_diffuse.r = visibility * ((col_diffuse.r / area) / constant);
   col_diffuse.g = visibility * ((col_diffuse.g / area) / constant);
   col_diffuse.b = visibility * ((col_diffuse.b / area) / constant);
 
+  col_diffuse.add(col_ambient);
+
+  col_diffuse.add(col_specular);
   
 
   // TODO : in phong split compute light colour into compute diffuse light and compute specular light
@@ -638,7 +646,7 @@ Colour radiance(Hit &hit)
   
   
 
-  return Colour(0,0,0,0);
+  return col_diffuse;
 
   // ask for n photons using nearest
   // calculate radius r from furthest photon
@@ -889,10 +897,6 @@ int main(int argc, char *argv[])
   
   // photon mapping here
   cast_photons(pl, pm);
-  //printf("global photon map created");
-
-
-  
   
   
   for (int y = 0; y < height; y += 1)
@@ -919,16 +923,24 @@ int main(int argc, char *argv[])
       raytrace(ray, pm, pl, colour, depth, d);
       Hit h;
       trace(ray, pm, h);
-      Colour col = radiance(h);
+      Colour col = radiance(h, ray, pl);
+
+
+
       // call radiance on hit point
       // get colour value for pixel
       // plot pixel
 
-      fb->plotPixel(x, y, colour.r, colour.g, colour.b);
+      // result of raytracing
+      //fb->plotPixel(x, y, colour.r, colour.g, colour.b);
+      // result of photon map
+      fb->plotPixel(x, y, col.r, col.g, col.b);
+
+
       //fb->plotDepth(x,y, depth);
     }
 
-    //printf("*");
+    printf("*");
 
     //cerr << "*" << flush;
   }

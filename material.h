@@ -36,6 +36,20 @@ public:
 		result.b = 0.0f;
 	}
 
+	virtual void compute_diffuse(Vector &viewer, Vector &normal, Vector &ldir, Colour &result)
+	{
+		result.r = 0.0f;
+		result.g = 0.0f;
+		result.b = 0.0f;
+	}
+
+	virtual void compute_specular(Vector &viewer, Vector &normal, Vector &ldir, Colour &result)
+	{
+		result.r = 0.0f;
+		result.g = 0.0f;
+		result.b = 0.0f;
+	}
+
 	virtual float prob_diff(){
 		return 0.0f;
 	}
