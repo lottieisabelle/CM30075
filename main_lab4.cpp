@@ -470,6 +470,7 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
     //diffuse.scale(scaling);
     // multiply the diffuse radiance by the ambient
     colour.add(diffuse);
+    //colour.scale(diffuse);
 
     // specular
     best_hit.what->material->compute_specular(viewer, best_hit.normal, ldir, specular);
@@ -477,7 +478,7 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
     colour.add(specular);
 
       
-
+    /*
     if(best_hit.what->material->bool_refraction){
       // do fresnel equation
       float kr = fresnel(ray, best_hit);
@@ -563,6 +564,7 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
       colour.add(col);
 
     }
+    */
 
   } else
   {
