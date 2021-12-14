@@ -36,7 +36,7 @@
 #include "plane.h"
 #include "photon.h"
 #include "point_light.h"
-// 3rd party kd tree : TODO reference 
+// 3rd party kd tree : https://github.com/xavierholt/kd TODO ?
 #include "kd-master/src/core.h"
 #include "kd-master/src/tree.h"
 
@@ -368,7 +368,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 Colour radiance(Hit &hit)
 {
-  float count = 50;
+  float count = 500;
   // get n nearest photons at hit point
   vector<Photon*> photons;
   photons = global_tree.nearest(hit.position, count);
@@ -385,9 +385,9 @@ Colour radiance(Hit &hit)
   }
 
   // determine brightness multiplier depending on number of shadow photons
-  float visibility = 1;
+  float visibility = 1.0;
   if(shadow_photons!=0){
-    visibility = shadow_photons / (shadow_photons+illuminated_photons);
+    visibility = illuminated_photons / (shadow_photons+illuminated_photons);
   }
 
   Vertex furthest;
@@ -437,82 +437,46 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
   {
     
     best_hit.what->material->compute_base_colour(colour);
-    depth = best_hit.t;
+
     Light *light = lights;
 
-    while (light != (Light *)0)
-    {
-      Vector viewer;
-      Vector ldir;
+    Vector viewer;
+    Vector ldir;
 
-      viewer.x = -best_hit.position.x;
-      viewer.y = -best_hit.position.y;
-      viewer.z = -best_hit.position.z;
-      viewer.normalise();
-
-      bool lit;
-      lit = light->get_direction(best_hit.position, ldir);
-
-      if(ldir.dot(best_hit.normal)>0)
-      {
-	      lit=false;//light is facing wrong way.
-      }
-
-      if(lit)
-      {
+    viewer.x = -best_hit.position.x;
+    viewer.y = -best_hit.position.y;
+    viewer.z = -best_hit.position.z;
+    viewer.normalise();
+    
       
-        Ray shadow_ray;
+    Colour diffuse;
+    Colour specular;
+    Colour scaling;
 
-        shadow_ray.direction.x = -ldir.x;
-        shadow_ray.direction.y = -ldir.y;
-        shadow_ray.direction.z = -ldir.z;
-        shadow_ray.position.x = best_hit.position.x + (0.0001f * shadow_ray.direction.x);
-        shadow_ray.position.y = best_hit.position.y + (0.0001f * shadow_ray.direction.y);
-        shadow_ray.position.z = best_hit.position.z + (0.0001f * shadow_ray.direction.z);
-
-        object_test(shadow_ray, objects, shadow_hit);
-
-		    if(shadow_hit.flag==true)
-		    {
-			    if (shadow_hit.t < 1000000000.0f)
-			    {
-				    lit = false; //there's a shadow so no lighting, if realistically close
-			    }
-        }
-      }
-
-      if (lit)
-      {
-        Colour diffuse;
-        Colour specular;
-		    Colour scaling;
-
-		    light->get_intensity(best_hit.position, scaling);
-          
-        // raytracing the same for photon mapping lighting EXCEPT for diffuse light
-        // ambient and specular is the same
+    light->get_intensity(best_hit.position, scaling);
+      
+    // raytracing the same for photon mapping lighting EXCEPT for diffuse light
+    // ambient and specular is the same
 
 
-        // multiply colour by ambience values of hit object?
-        // multiply or add?
+    // multiply colour by ambience values of hit object?
+    // multiply or add?
 
-        // diffuse colour from photon map
-        diffuse = radiance(best_hit);
+    // diffuse colour from photon map
+    diffuse = radiance(best_hit);
 
-		    //best_hit.what->material->compute_light_colour(viewer, best_hit.normal, ldir, intensity);
+    //best_hit.what->material->compute_light_colour(viewer, best_hit.normal, ldir, intensity);
 
-        diffuse.scale(scaling);
-		    colour.add(diffuse);
+    //diffuse.scale(scaling);
+    // multiply the diffuse radiance by the ambient
+    colour.add(diffuse);
 
-        // specular
-        best_hit.what->material->compute_specular(viewer, best_hit.normal, ldir, specular);
-        specular.scale(scaling);
-        colour.add(specular);
+    // specular
+    best_hit.what->material->compute_specular(viewer, best_hit.normal, ldir, specular);
+    specular.scale(scaling);
+    colour.add(specular);
 
-      }
-
-      light = light->next;
-    }
+      
 
     if(best_hit.what->material->bool_refraction){
       // do fresnel equation
@@ -620,26 +584,31 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
     p->what = hit->what;
     global_tree.insert(p);
 
-    // send shadow photon
-    Ray shadow_ray;
-    Hit shadow_hit;
-    shadow_ray.direction = ray.direction;
-    shadow_ray.direction.normalise();
-    shadow_ray.position.x = hit->position.x + (0.0001 * shadow_ray.direction.x);
-    shadow_ray.position.y = hit->position.y + (0.0001 * shadow_ray.direction.y);
-    shadow_ray.position.z = hit->position.z + (0.0001 * shadow_ray.direction.z);
+    // only want shadow photons for direct illumination
+    if(p->p_type == 'd'){
+      // send shadow photon
+      Ray shadow_ray;
+      Hit shadow_hit;
+      shadow_ray.direction = ray.direction;
+      shadow_ray.direction.normalise();
+      shadow_ray.position.x = hit->position.x + (0.0022 * shadow_ray.direction.x);
+      shadow_ray.position.y = hit->position.y + (0.0022 * shadow_ray.direction.y);
+      shadow_ray.position.z = hit->position.z + (0.0022 * shadow_ray.direction.z);
 
-    object_test(shadow_ray, objects, shadow_hit);
+      object_test(shadow_ray, objects, shadow_hit);
 
-    // if shadow photon hits a new object that creates a shadow (i.e. not refractive ones) store hit now
-    if(shadow_hit.flag && !shadow_hit.what->material->bool_refraction){
-      Photon *shadow_photon = new Photon();
-      shadow_photon->direction = shadow_ray.direction;
-      shadow_photon->position = shadow_hit.position;
-      shadow_photon->intensity = Colour(1,1,1,0);
-      shadow_photon->what = shadow_hit.what;
-      shadow_photon->p_type = 's';
-      global_tree.insert(shadow_photon); 
+      // if shadow photon hits a new object that creates a shadow (i.e. not refractive ones) store hit now
+      if(shadow_hit.flag && (shadow_hit.what != hit->what) && !shadow_hit.what->material->bool_refraction){
+        Photon *shadow_photon = new Photon();
+        shadow_photon->direction = shadow_ray.direction;
+        shadow_photon->position = shadow_hit.position;
+        shadow_photon->intensity = Colour(1,1,1,0);
+        shadow_photon->what = shadow_hit.what;
+        shadow_photon->p_type = 's';
+        global_tree.insert(shadow_photon); 
+
+      }
+      
     }
 
     // calculate probability of absorption or reflection (diffuse/specular) for hit material
@@ -653,12 +622,8 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
     // russian roulette
     if(random_num < prob_ref){ // if reflected
-      //printf("reflected\n");
       if(random_num < prob_diff){ // if diffuse reflected
-        //printf("d");
-
         // get random direction for a bounced ray
-        // random number generator set up code, for random direction vectors
         Vector v_diffuse;
         
         // random numnbers between -1 and 1
@@ -672,43 +637,31 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
           v_diffuse.z = (float) rand() / RAND_MAX * 2.0 - 1.0;
           v_diffuse.normalise();
         }
-
-        // absorb colour of the hit
-
-        /*
-        Colour diffuse_col;
-        hit->what->material->get_diffuse(diffuse_col);
-        Colour intensity = p->intensity;
-        intensity.scale(diffuse_col);
-        Colour tempColD = Colour (1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff, 1.0f/prob_diff);
-        intensity.scale(tempColD);
-        */
-
+        
         // create the new diffusely reflected photon and trace
         Photon *ref_photon = new Photon();
-        ref_photon->intensity = Colour(1,1,1,0);
+        // scale new photon power by diffuse values of object hit
+        Colour diffuse_col;
+        hit->what->material->get_diffuse(diffuse_col);
+        Colour intensity (1,1,1,0);
+        intensity.scale(diffuse_col);
+        ref_photon->intensity = intensity;
         ref_photon->p_type = 'i';
 
         Vertex new_pos (hit->position.x + 0.0001 * v_diffuse.x, hit->position.y + 0.0001 * v_diffuse.y, hit->position.z + 0.0001 * v_diffuse.z);
         trace_photon(Ray(new_pos, v_diffuse), ref_photon, objects, hit);
 
       } else if (random_num < prob_ref && hit->what->material->bool_specular){  // specular reflection
-        //printf("s");
         Vector v_specular;
         hit->normal.reflection(ray.direction, v_specular);
 
-        // absorb colour of the hit
-        /*
-        Colour specular_col = hit->what->material->get_specular();
-        Colour intensity = p->intensity;
-        intensity.scale(specular_col);
-        Colour tempColS = Colour (1.0f/prob_spec, 1.0f/prob_spec, 1.0f/prob_spec, 1.0f/prob_spec);
-        intensity.scale(tempColS);
-        */
-
-        // create the new diffusely reflected photon and trace
+        // create the new specularly reflected photon and trace
         Photon *ref_photon = new Photon();
-        ref_photon->intensity = Colour(1,1,1,0);;
+        // scale new photon power by specular values of object hit
+        Colour specular_col = hit->what->material->get_specular();
+        Colour intensity (1,1,1,0);
+        intensity.scale(specular_col);
+        ref_photon->intensity = intensity;
         ref_photon->p_type = 'i';
 
         Vertex new_pos (hit->position.x + 0.0001 * v_specular.x, hit->position.y + 0.0001 * v_specular.y, hit->position.z + 0.0001 * v_specular.z);
@@ -717,9 +670,15 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
       }
 
     } else if (random_num > prob_ref && random_num < 1) { // if absorbed
-      //printf("a");
       // if absorbed into refractive object, refract - otherwise do nothing
       if(hit->what->material->bool_refraction){
+        // do fresnel equation
+        float kr = fresnel(ray, *hit);
+        float kt = 1.0 - kr;
+
+        hit->what->material->k_reflection = kr;
+        hit->what->material->k_refraction = kt;
+
 
         float n = hit->what->material->index_refraction;
         // tray.dir = refraction(ray.dir, hit.normal, hit.ior);
@@ -754,7 +713,6 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
     }
 
   }
-  //printf("no hit\n");
 }
 
 void cast_photons(Light *light, Object *objects)
@@ -765,7 +723,7 @@ void cast_photons(Light *light, Object *objects)
 
   Hit *hit = new Hit();
   
-  int n = 10000; // number of photons TODO set number
+  int n = 500000; // number of photons TODO set number
 
   printf("photon casting:\n");
 
@@ -815,8 +773,8 @@ void cast_photons(Light *light, Object *objects)
 
 int main(int argc, char *argv[])
 {
-  int width = 128;
-  int height = 128;
+  int width = 256;
+  int height = 256;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -936,7 +894,7 @@ int main(int argc, char *argv[])
   v.y = -1.0f; 
   v.z = 8.0f; 
   
-  Sphere *sphere = new Sphere(v, 0.4);
+  Sphere *sphere = new Sphere(v, 0.5);
   Phong bp2;
   bp2.ambient.r = 0.5f; // 0.5 was 0.6
 	bp2.ambient.g = 0.5f;
@@ -965,7 +923,7 @@ int main(int argc, char *argv[])
   v2.y = 1.0f;
   v2.z = 8.0f;
   
-  Sphere *sphere2 = new Sphere(v2,0.6f);
+  Sphere *sphere2 = new Sphere(v2,0.85f);
   Phong bp3;
   bp3.ambient.r = 0.5f; // 0.5 was 0.6
 	bp3.ambient.g = 0.5f;
@@ -993,7 +951,7 @@ int main(int argc, char *argv[])
   v3.y = 2.0f;
   v3.z = 4.0f;
   
-  Sphere *sphere3 = new Sphere(v3,0.6f);
+  Sphere *sphere3 = new Sphere(v3,0.7f);
   Phong bp7;
   bp7.ambient.r = 0.5f; // 0.5 was 0.6
 	bp7.ambient.g = 0.5f;
@@ -1021,8 +979,9 @@ int main(int argc, char *argv[])
   floor_pm->next = left_wall;
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
-  ceiling_pm->next = sphere;
-  sphere->next = sphere2;
+  ceiling_pm->next = sphere2;
+  //ceiling_pm->next = sphere;
+  //sphere->next = sphere2;
   //sphere2->next = sphere3;
   
   // generate shooting ray from camera point
@@ -1060,7 +1019,7 @@ int main(int argc, char *argv[])
       ray.direction.z = 0.5f;
       ray.direction.normalise();
 
-      Colour colour;
+      Colour colour (0,0,0,0);
       float depth;
 
       // reflection and refraction recursion depth
@@ -1075,6 +1034,27 @@ int main(int argc, char *argv[])
       //trace(ray, pm, h);
       //colour = radiance(h);
 
+      // visualise photons
+      if(0){
+        Hit hit;
+        trace(ray, pm, hit);
+        Photon* photon;
+        photon = global_tree.nearest(hit.position);
+        if(photon->p_type == 'd'){
+          colour.r = 1.0;
+          colour.g = 1.0;
+          colour.b = 1.0;
+        } else if(photon->p_type == 'i'){
+          colour.r = 1.0;
+          colour.g = 0.0;
+          colour.b = 0.0;
+        } else if(photon->p_type == 's'){
+          colour.r = 0.0;
+          colour.g = 0.0;
+          colour.b = 1.0;
+        }
+      }
+      
 
 
       // call radiance on hit point
