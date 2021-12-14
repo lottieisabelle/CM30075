@@ -368,7 +368,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 Colour radiance(Hit &hit)
 {
-  float count = 500;
+  float count = 100;
   // get n nearest photons at hit point
   vector<Photon*> photons;
   photons = global_tree.nearest(hit.position, count);
@@ -469,16 +469,17 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
 
     //diffuse.scale(scaling);
     // multiply the diffuse radiance by the ambient
-    colour.add(diffuse);
-    //colour.scale(diffuse);
+    //colour.add(diffuse);
+    colour.scale(diffuse);
 
     // specular
     best_hit.what->material->compute_specular(viewer, best_hit.normal, ldir, specular);
-    specular.scale(scaling);
-    colour.add(specular);
+    colour.scale(specular);
+    //specular.scale(scaling);
+    //colour.add(specular);
 
       
-    /*
+    
     if(best_hit.what->material->bool_refraction){
       // do fresnel equation
       float kr = fresnel(ray, best_hit);
@@ -564,7 +565,7 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
       colour.add(col);
 
     }
-    */
+    
 
   } else
   {
@@ -580,7 +581,6 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
   object_test(ray, objects, *hit);
 
   if(hit->flag){
-    //printf("hit\n");
     p->position = hit->position;
     p->direction = ray.direction;
     p->what = hit->what;
@@ -673,7 +673,10 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
 
     } else if (random_num > prob_ref && random_num < 1) { // if absorbed
       // if absorbed into refractive object, refract - otherwise do nothing
-      if(hit->what->material->bool_refraction){
+
+      // TODO : removed refraction from global photon map
+      //if(hit->what->material->bool_refraction){
+      if(0){
         // do fresnel equation
         float kr = fresnel(ray, *hit);
         float kt = 1.0 - kr;
@@ -725,9 +728,9 @@ void cast_photons(Light *light, Object *objects)
 
   Hit *hit = new Hit();
   
-  int n = 500000; // number of photons TODO set number
+  int n = 100000; // number of photons TODO set number
 
-  printf("photon casting:\n");
+  printf("\nPhoton casting:\n");
 
   int increment = 10;
   
@@ -753,13 +756,10 @@ void cast_photons(Light *light, Object *objects)
       photon_dir.z = (float) rand() / RAND_MAX * 2.0 - 1.0;
       photon_dir.normalise();
     }
-    //printf("photon dir: %f, %f, %f\n", photon_dir.x, photon_dir.y, photon_dir.z);
     
     p->direction = photon_dir;    
 
     trace_photon(Ray(light_pos, photon_dir), p, objects, hit);
-
-    //printf("!\n");
 
     float y = ((float) i) / ((float) n);
     y = y * 100.0;
@@ -889,7 +889,7 @@ int main(int argc, char *argv[])
   ceiling_pm->material->bool_refraction = false;
   ceiling_pm->material->bool_specular = false;
 
-  // create bubbles
+  // create bubbles from teapot spout
   // lower bubble
   Vertex v;
   v.x = 3.0f; 
@@ -947,33 +947,34 @@ int main(int argc, char *argv[])
   sphere2->material->ior_object = 1.38f; // soap bubbles
   sphere2->material->ior_surround = 1.0003f; // air
 
-  // big bubble
+  // metal ball
   Vertex v3;
-  v3.x = 0.0f;
-  v3.y = 2.0f;
-  v3.z = 4.0f;
+  v3.x = -7.5f;
+  v3.y = -3.0f;
+  v3.z = 12.0f;
   
-  Sphere *sphere3 = new Sphere(v3,0.7f);
+  Sphere *sphere3 = new Sphere(v3,2.0f);
   Phong bp7;
-  bp7.ambient.r = 0.5f; // 0.5 was 0.6
-	bp7.ambient.g = 0.5f;
-	bp7.ambient.b = 0.5f;
-	bp7.diffuse.r = 0.5f;
-	bp7.diffuse.g = 0.5f;
-	bp7.diffuse.b = 0.5f;
-	bp7.specular.r = 0.3f; // 0.3 was 0.4
-	bp7.specular.g = 0.3f;
-	bp7.specular.b = 0.3f;
+  bp7.ambient.r = 0.0f; 
+	bp7.ambient.g = 0.2f;
+	bp7.ambient.b = 0.0f;
+	bp7.diffuse.r = 0.0f;
+	bp7.diffuse.g = 0.4f;
+	bp7.diffuse.b = 0.0f;
+	bp7.specular.r = 0.4f; 
+	bp7.specular.g = 0.4f;
+	bp7.specular.b = 0.4f;
 	bp7.power = 40.0f;
+  bp7.reflection = 0.5f;
 
  	sphere3->material = &bp7;
 
   sphere3->material->bool_reflection = true;
-  sphere3->material->bool_refraction = true;
+  sphere3->material->bool_refraction = false;
   sphere3->material->bool_specular = true;
   //sphere3->material->ior_object = 1.33f; // water
-  sphere3->material->ior_object = 1.38f; // soap bubbles
-  sphere3->material->ior_surround = 1.0003f; // air
+  //sphere3->material->ior_object = 1.38f; // soap bubbles
+  //sphere3->material->ior_surround = 1.0003f; // air
 
   // link objects
   pm->next = background_pm;
@@ -981,7 +982,9 @@ int main(int argc, char *argv[])
   floor_pm->next = left_wall;
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
-  ceiling_pm->next = sphere2;
+
+  ceiling_pm->next = sphere3;
+
   //ceiling_pm->next = sphere;
   //sphere->next = sphere2;
   //sphere2->next = sphere3;
@@ -1058,12 +1061,7 @@ int main(int argc, char *argv[])
       }
       
 
-
-      // call radiance on hit point
-      // get colour value for pixel
-      // plot pixel
-
-      // result of raytracing
+      // result of raytracing + photon map data
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
       // result of photon map
       //fb->plotPixel(x, y, col.r, col.g, col.b);
