@@ -69,7 +69,11 @@ public:
 		result.b = 0.0f;
 	}
 
-	virtual Colour get_specular(){
-		return Colour (0,0,0,0);
+	virtual void get_specular(Colour &result)
+	{
+		result.r = 0.0f;
+		result.g = 0.0f;
+		result.b = 0.0f;
 	}
+
 };

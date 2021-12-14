@@ -425,9 +425,7 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
     return;
   }
   
-  // first step, find the closest primitive
-
-  Hit shadow_hit;
+  // first step, find the closest object
   Hit best_hit;
   object_test(ray, objects, best_hit);
 
@@ -451,9 +449,9 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
       
     Colour diffuse;
     Colour specular;
-    Colour scaling;
+    //Colour scaling;
 
-    light->get_intensity(best_hit.position, scaling);
+    //light->get_intensity(best_hit.position, scaling);
       
     // raytracing the same for photon mapping lighting EXCEPT for diffuse light
     // ambient and specular is the same
@@ -474,9 +472,20 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
 
     // specular
     best_hit.what->material->compute_specular(viewer, best_hit.normal, ldir, specular);
-    colour.scale(specular);
-    //specular.scale(scaling);
-    //colour.add(specular);
+
+    
+    if (best_hit.what->material->bool_specular){
+      colour.scale(specular);
+    }
+
+    // check if specular multiplier in photon tracing should be compute diffuse and compute specular or just the get
+    
+    //colour.scale(specular); // just do this -> just ball
+    //colour.add(specular); // just do this -> scene with green ball
+
+    // try increasing power values of photons
+    // or scaling diffuse by specular vs scaling diffuse by ambient colour depending on object materials ?
+
 
       
     
@@ -604,7 +613,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         Photon *shadow_photon = new Photon();
         shadow_photon->direction = shadow_ray.direction;
         shadow_photon->position = shadow_hit.position;
-        shadow_photon->intensity = Colour(1,1,1,0);
+        shadow_photon->intensity = Colour(10,10,10,0);
         shadow_photon->what = shadow_hit.what;
         shadow_photon->p_type = 's';
         global_tree.insert(shadow_photon); 
@@ -645,7 +654,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         // scale new photon power by diffuse values of object hit
         Colour diffuse_col;
         hit->what->material->get_diffuse(diffuse_col);
-        Colour intensity (1,1,1,0);
+        Colour intensity (10,10,10,0);
         intensity.scale(diffuse_col);
         ref_photon->intensity = intensity;
         ref_photon->p_type = 'i';
@@ -660,8 +669,9 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         // create the new specularly reflected photon and trace
         Photon *ref_photon = new Photon();
         // scale new photon power by specular values of object hit
-        Colour specular_col = hit->what->material->get_specular();
-        Colour intensity (1,1,1,0);
+        Colour specular_col;
+        hit->what->material->get_specular(specular_col);
+        Colour intensity (10,10,10,0);
         intensity.scale(specular_col);
         ref_photon->intensity = intensity;
         ref_photon->p_type = 'i';
@@ -710,7 +720,7 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
         Vertex new_pos (hit->position.x + 0.0001 * v_refracted.x, hit->position.y + 0.0001 * v_refracted.y, hit->position.z + 0.0001 * v_refracted.z);
         Photon *refracted_photon = new Photon();
         refracted_photon->p_type = 'i';
-        refracted_photon->intensity = Colour(1,1,1,0);
+        refracted_photon->intensity = Colour(10,10,10,0);
         
         trace_photon(Ray(new_pos, v_refracted), refracted_photon, objects, hit);
 
@@ -739,7 +749,7 @@ void cast_photons(Light *light, Object *objects)
     
     // create photon
     Photon *p = new Photon();
-    p->intensity = Colour(1,1,1,0);
+    p->intensity = Colour(10,10,10,0);
     p->p_type = 'd';
 
     // send out into picture, meaning give photon direction vector
@@ -807,7 +817,7 @@ int main(int argc, char *argv[])
   pm->material->bool_reflection = false;
   //pm->material->k_reflection = 0.4f;
   pm->material->bool_refraction = false;
-  pm->material->bool_specular = true;
+  pm->material->bool_specular = false;
   //pm->material->ior_object = 1.52f; // glass
   //pm->material->ior_surround = 1.0003f; // air
 

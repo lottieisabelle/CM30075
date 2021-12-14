@@ -111,6 +111,16 @@ void Phong::compute_specular(Vector &viewer, Vector &normal, Vector &ldir, Colou
 
 	Vector tolight;
 	Vector toviewer;
+
+	result.r=0.0f;
+	result.g=0.0f;
+	result.b=0.0f;
+
+	tolight = ldir;
+	tolight.negate();
+
+	toviewer = viewer;
+	toviewer.negate();
 	
 	normal.reflection(tolight, r);
 	r.normalise();
@@ -155,4 +165,10 @@ void Phong::get_diffuse(Colour &result){
 	result.r = diffuse.r;
 	result.g = diffuse.g;
 	result.b = diffuse.b;
+}
+
+void Phong::get_specular(Colour &result){
+	result.r = specular.r;
+	result.g = specular.g;
+	result.b = specular.b;
 }

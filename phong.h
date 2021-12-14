@@ -37,4 +37,6 @@ public:
 	float prob_spec();
 
 	void get_diffuse(Colour &result);
+
+	void get_specular(Colour &result);
 };
