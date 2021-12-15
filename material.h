@@ -22,6 +22,7 @@ public:
 	bool bool_reflection;
 	bool bool_refraction;
 	bool bool_specular;
+	bool fresnel;
 
 	virtual void compute_base_colour(Colour &result)
 	{

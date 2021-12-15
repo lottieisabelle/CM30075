@@ -271,7 +271,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       light = light->next;
     }
 
-    if(best_hit.what->material->bool_refraction){
+    if(best_hit.what->material->fresnel){
       // do fresnel equation
       float kr = fresnel(ray, best_hit);
       float kt = 1.0 - kr;
@@ -822,6 +822,7 @@ int main(int argc, char *argv[])
   //pm->material->k_reflection = 0.4f;
   pm->material->bool_refraction = false;
   pm->material->bool_specular = false;
+  pm->material->fresnel = false;
   //pm->material->ior_object = 1.52f; // glass
   //pm->material->ior_surround = 1.0003f; // air
 
@@ -878,30 +879,35 @@ int main(int argc, char *argv[])
   background_pm->material->bool_reflection = false;  
   background_pm->material->bool_refraction = false; 
   background_pm->material->bool_specular = false;
+  background_pm->material->fresnel = false;
 
   // floor
   floor_pm->material = &bp4;
   floor_pm->material->bool_reflection = false;
   floor_pm->material->bool_refraction = false;
   floor_pm->material->bool_specular = false;
+  background_pm->material->fresnel = false;
 
   // left wall
   left_wall->material = &bp5;
   left_wall->material->bool_reflection = false;
   left_wall->material->bool_refraction = false;
   left_wall->material->bool_specular = false;
+  left_wall->material->fresnel = false;
 
   // right wall
   right_wall->material = &bp5;
   right_wall->material->bool_reflection = false;  
   right_wall->material->bool_refraction = false;
   right_wall->material->bool_specular = false;
+  right_wall->material->fresnel = false;
 
   // ceiling
   ceiling_pm->material = &bp4;
   ceiling_pm->material->bool_reflection = false;  
   ceiling_pm->material->bool_refraction = false;
   ceiling_pm->material->bool_specular = false;
+  ceiling_pm->material->fresnel = false;
 
   // create bubbles from teapot spout
   // lower bubble
@@ -927,6 +933,7 @@ int main(int argc, char *argv[])
   sphere->material->bool_reflection = true;
   sphere->material->bool_refraction = true;
   sphere->material->bool_specular = true;
+  sphere->material->fresnel = true;
 
   sphere->material->ior_object = 1.38f; // soap bubbles
   sphere->material->ior_surround = 1.0003f; // air
@@ -957,15 +964,16 @@ int main(int argc, char *argv[])
   sphere2->material->bool_reflection = true;
   sphere2->material->bool_refraction = true;
   sphere2->material->bool_specular = true;
+  sphere2->material->fresnel = true;
   //sphere2->material->ior_object = 1.33f; // water
   sphere2->material->ior_object = 1.38f; // soap bubbles
   sphere2->material->ior_surround = 1.0003f; // air
 
   // metal ball
   Vertex v3;
-  v3.x = -7.5f;
+  v3.x = -6.0f;
   v3.y = -3.0f;
-  v3.z = 12.0f;
+  v3.z = 10.0f;
   
   Sphere *sphere3 = new Sphere(v3,2.0f);
   Phong bp7;
@@ -975,27 +983,28 @@ int main(int argc, char *argv[])
 	bp7.diffuse.r = 0.0f;
 	bp7.diffuse.g = 0.0f;
 	bp7.diffuse.b = 0.0f;
-	bp7.specular.r = 0.4f; 
-	bp7.specular.g = 0.4f;
-	bp7.specular.b = 0.4f;
+	bp7.specular.r = 0.0f; 
+	bp7.specular.g = 0.0f;
+	bp7.specular.b = 0.0f;
 	bp7.power = 40.0f;
-  bp7.reflection = 0.5f;
+  bp7.reflection = 0.9f;
 
  	sphere3->material = &bp7;
 
   sphere3->material->bool_reflection = true;
   sphere3->material->bool_refraction = false;
   sphere3->material->bool_specular = true;
-  sphere3->material->k_reflection = 0.5f;
+  sphere3->material->fresnel = false;
+  sphere3->material->k_reflection = 0.9f;
   //sphere3->material->ior_object = 1.33f; // water
   //sphere3->material->ior_object = 1.38f; // soap bubbles
   //sphere3->material->ior_surround = 1.0003f; // air
 
   // glass ball
   Vertex v4;
-  v4.x = 7.5f;
+  v4.x = 7.0f;
   v4.y = -3.0f;
-  v4.z = 12.0f;
+  v4.z = 11.5f;
   
   Sphere *sphere4 = new Sphere(v4,2.0f);
   Phong bp8;
@@ -1003,18 +1012,21 @@ int main(int argc, char *argv[])
 	bp8.ambient.g = 0.0f;
 	bp8.ambient.b = 0.0f;
 	bp8.diffuse.r = 0.0f;
-	bp8.diffuse.g = 0.4f;
+	bp8.diffuse.g = 0.0f;
 	bp8.diffuse.b = 0.0f;
-	bp8.specular.r = 0.4f; 
-	bp8.specular.g = 0.4f;
-	bp8.specular.b = 0.4f;
+	bp8.specular.r = 0.1f; 
+	bp8.specular.g = 0.1f;
+	bp8.specular.b = 0.1f;
 	bp8.power = 40.0f;
 
  	sphere4->material = &bp8;
 
   sphere4->material->bool_reflection = true;
   sphere4->material->bool_refraction = true;
-  sphere4->material->bool_specular = true;
+  sphere4->material->bool_specular = false;
+  sphere4->material->fresnel = false;
+  sphere4->material->k_refraction = 0.9f;
+  sphere4->material->k_reflection = 0.1f;
   sphere4->material->ior_object = 1.52f; // glass
   sphere4->material->ior_surround = 1.0003f; // air
 
@@ -1128,6 +1140,7 @@ int main(int argc, char *argv[])
   
   // Output the framebuffer.
   fb->writeRGBFile((char *)"Raytraced.ppm");
+  printf("\nImage rendered.\n");
   //  fb->writeDepthFile((char *)"depth.ppm");
   return 0;
   
