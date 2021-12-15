@@ -474,14 +474,14 @@ void p_raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &
     best_hit.what->material->compute_specular(viewer, best_hit.normal, ldir, specular);
 
     
-    if (best_hit.what->material->bool_specular){
-      colour.scale(specular);
-    }
+    //if (best_hit.what->material->bool_specular){
+      //colour.scale(specular);
+    //}
 
     // check if specular multiplier in photon tracing should be compute diffuse and compute specular or just the get
     
-    //colour.scale(specular); // just do this -> just ball
-    //colour.add(specular); // just do this -> scene with green ball
+    //colour.scale(specular); // just do this -> just ball - now scene is red? after only storing photons that hit non specular surfaces
+    colour.add(specular); // just do this -> scene with green ball - ball no longer green
 
     // try increasing power values of photons
     // or scaling diffuse by specular vs scaling diffuse by ambient colour depending on object materials ?
@@ -590,37 +590,41 @@ void trace_photon(Ray ray, Photon *p, Object *objects, Hit *hit)
   object_test(ray, objects, *hit);
 
   if(hit->flag){
-    p->position = hit->position;
-    p->direction = ray.direction;
-    p->what = hit->what;
-    global_tree.insert(p);
+    // if hit.what is not specular then store photon and create shadow
+    if(!hit->what->material->bool_specular){
+      p->position = hit->position;
+      p->direction = ray.direction;
+      p->what = hit->what;
+      global_tree.insert(p);
 
-    // only want shadow photons for direct illumination
-    if(p->p_type == 'd'){
-      // send shadow photon
-      Ray shadow_ray;
-      Hit shadow_hit;
-      shadow_ray.direction = ray.direction;
-      shadow_ray.direction.normalise();
-      shadow_ray.position.x = hit->position.x + (0.0022 * shadow_ray.direction.x);
-      shadow_ray.position.y = hit->position.y + (0.0022 * shadow_ray.direction.y);
-      shadow_ray.position.z = hit->position.z + (0.0022 * shadow_ray.direction.z);
+      // only want shadow photons for direct illumination
+      if(p->p_type == 'd'){
+        // send shadow photon
+        Ray shadow_ray;
+        Hit shadow_hit;
+        shadow_ray.direction = ray.direction;
+        shadow_ray.direction.normalise();
+        shadow_ray.position.x = hit->position.x + (0.0022 * shadow_ray.direction.x);
+        shadow_ray.position.y = hit->position.y + (0.0022 * shadow_ray.direction.y);
+        shadow_ray.position.z = hit->position.z + (0.0022 * shadow_ray.direction.z);
 
-      object_test(shadow_ray, objects, shadow_hit);
+        object_test(shadow_ray, objects, shadow_hit);
 
-      // if shadow photon hits a new object that creates a shadow (i.e. not refractive ones) store hit now
-      if(shadow_hit.flag && (shadow_hit.what != hit->what) && !shadow_hit.what->material->bool_refraction){
-        Photon *shadow_photon = new Photon();
-        shadow_photon->direction = shadow_ray.direction;
-        shadow_photon->position = shadow_hit.position;
-        shadow_photon->intensity = Colour(10,10,10,0);
-        shadow_photon->what = shadow_hit.what;
-        shadow_photon->p_type = 's';
-        global_tree.insert(shadow_photon); 
+        // if shadow photon hits a new object that creates a shadow (i.e. not refractive ones) store hit now
+        if(shadow_hit.flag && (shadow_hit.what != hit->what) && !shadow_hit.what->material->bool_refraction){
+          Photon *shadow_photon = new Photon();
+          shadow_photon->direction = shadow_ray.direction;
+          shadow_photon->position = shadow_hit.position;
+          shadow_photon->intensity = Colour(10,10,10,0);
+          shadow_photon->what = shadow_hit.what;
+          shadow_photon->p_type = 's';
+          global_tree.insert(shadow_photon); 
 
+        }
+        
       }
-      
     }
+    
 
     // calculate probability of absorption or reflection (diffuse/specular) for hit material
     float random_num = (float) rand() / RAND_MAX;
@@ -1019,6 +1023,8 @@ int main(int argc, char *argv[])
   // photon mapping here
   cast_photons(pl, pm);
   
+  printf("\nImage Rendering:\n");
+  int increment = 10;
   
   for (int y = 0; y < height; y += 1)
   {
@@ -1080,7 +1086,15 @@ int main(int argc, char *argv[])
       //fb->plotDepth(x,y, depth);
     }
 
-    printf("*");
+    //printf("*");
+    float div = ((float) y) / ((float) height);
+    
+    div = div * 100.0;
+    int z = (int) div;
+    if(z == increment){
+      printf("%d%\n", z);
+      increment += 10;
+    }
 
     //cerr << "*" << flush;
   }
