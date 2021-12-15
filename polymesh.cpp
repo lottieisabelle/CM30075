@@ -314,7 +314,50 @@ void PolyMesh::triangle_intersection(Ray ray, Hit &hit, int which_triangle)
   hit.what = this;
   hit.position = p;
 
-  hit.normal = face_normal[which_triangle];
+  // calculate normal at point P
+  // vertices A, B and C
+  Vertex A = vertex[triangle[which_triangle][0]];
+  Vertex B = vertex[triangle[which_triangle][1]];
+  Vertex C = vertex[triangle[which_triangle][2]];
+
+  Vector v_AB = A.getDirection(B);
+  //v_AB.normalise();
+  Vector v_AC = A.getDirection(C);
+  //v_AC.normalise();
+  Vector v_AP = A.getDirection(p);
+  //v_AP.normalise();
+
+  float d_ABAB = v_AB.dot(v_AB);
+  float d_ABAC = v_AB.dot(v_AC);
+  float d_ACAC = v_AC.dot(v_AC);
+  float d_APAB = v_AP.dot(v_AB);
+  float d_APAC = v_AP.dot(v_AC);
+
+  float denom = d_ABAB * d_ACAC - d_ABAC * d_ABAC;
+
+  float pv;
+  float pw;
+  float pu;
+  pv = (d_ACAC * d_APAB - d_ABAC * d_APAC) / denom;
+  pw = (d_ABAB * d_APAC - d_ABAC * d_APAB) / denom;
+  pu = 1.0f - pv - pw;
+
+  //printf("pv : %f , pw : %f , pu : %f\n", pv, pw, pu);
+
+  // vertex normals of triangle vertices  
+  Vector v0_n = vertex_normal[triangle[which_triangle][0]];
+  Vector v1_n = vertex_normal[triangle[which_triangle][1]];
+  Vector v2_n = vertex_normal[triangle[which_triangle][2]];
+
+  Vector p_n;
+
+  p_n.x = v0_n.x*pu + v1_n.x*pv + v2_n.x*pw;
+  p_n.y = v0_n.y*pu + v1_n.y*pv + v2_n.y*pw;
+  p_n.z = v0_n.z*pu + v1_n.z*pv + v2_n.z*pw;
+
+
+  hit.normal = p_n;
+  //hit.normal = face_normal[which_triangle];
 
   hit.normal.normalise();
 
@@ -338,7 +381,7 @@ void PolyMesh::intersection(Ray ray, Hit &hit)
     {
       if (hit.flag == false)
       {
-	hit = current_hit;
+	      hit = current_hit;
 
       } else if (current_hit.t < hit.t)
       {

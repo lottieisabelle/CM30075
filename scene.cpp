@@ -43,7 +43,7 @@ void Scene::trace(Ray ray, Object *objects, Hit &hit)
 	}
 }
 
-void Scene::raytrace(Ray ray, int level, Object *objects, Light *lights, Colour &colour)
+void Scene::raytrace(Ray ray, int level, Object *objects, Light *lights, Colour &colour) 
 {
 	
 	// a default colour if we hit nothing.

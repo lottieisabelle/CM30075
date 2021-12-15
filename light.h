@@ -23,6 +23,7 @@ public:
 	}
 
 	// Get the direction towards the light at the point on the surface
+	// ACTUALLY the direction from the light to the surface
 	// should return true if the surface is in front of the light
 	// and false if it's behind and not illuminated.
 	virtual bool get_direction(Vertex &surface, Vector &dir)
@@ -34,6 +35,16 @@ public:
 	virtual void get_intensity(Vertex &surface, Colour &intensity)
 	{
 
+	}
+
+	virtual Vertex get_position()
+	{
+		return Vertex (0,0,0);
+	}
+
+	virtual Vector get_direction()
+	{
+		return Vector (0,0,0);
 	}
 
 };
