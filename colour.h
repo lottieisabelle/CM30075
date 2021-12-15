@@ -1,23 +1,49 @@
+/***************************************************************************
+ *
+ * krt - Kens Raytracer - Coursework Edition. (C) Copyright 1997-2018.
+ *
+ * Do what you like with this code as long as you retain this comment.
+ */
 
-class Colour{
-    public:
-        float red;
-        float green;
-        float blue;
+// Colour is a class to store and maniplulate an rgba colour.
 
-        Colour(){
+#pragma once
 
-        }
+class Colour {
+public:
+	float r;
+	float g;
+	float b;
+	float a;
 
-        Colour(float r, float g, float b){
-            red = r;
-            green = g;
-            blue = b;
-        }
+	Colour()
+	{
+		r = 0.0f;
+		g = 0.0f;
+		b = 0.0f;
+		a = 1.0f;
+	}
 
-        void multiply(Colour scale){
-            red = red * scale.red;
-            green = green * scale.green;
-            blue = blue * scale.blue;
-        }
+	Colour(float pr, float pg, float pb, float pa)
+	{
+		r = pr;
+		g = pg;
+		b = pb;
+		a = pa;
+	}
+
+	void scale(Colour &scaling)
+	{
+		r *= scaling.r;
+		g *= scaling.g;
+		b *= scaling.b;
+		a *= scaling.a;
+	}
+
+	void add(Colour &adjust)
+	{
+		r += adjust.r;
+		g += adjust.g;
+		b += adjust.b;
+	}
 };

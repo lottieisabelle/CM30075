@@ -10,6 +10,10 @@
 
 #pragma once
 
+#include <iostream>
+using namespace std;
+
+
 #include "vertex.h"
 #include "vector.h"
 
@@ -22,4 +26,10 @@ public:
 	Object *what;
 	Vertex position;
 	Vector normal;
+
+	friend ostream& operator<<(ostream& os, const Hit& h)
+	{
+	  os << "Hit{" << h.flag <<",[" << h.position.x << "," << h.position.y << "," << h.position.z << "],[" << h.normal.x << "," << h.normal.y << "," << h.normal.z << "]}\n"; 
+          return os;
+	}
 };

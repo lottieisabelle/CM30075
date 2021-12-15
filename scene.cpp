@@ -1,75 +1,122 @@
+/***************************************************************************
+ *
+ * krt - Kens Raytracer - Coursework Edition. (C) Copyright 1997-2018.
+ *
+ * Do what you like with this code as long as you retain this comment.
+ */
 
 #include "scene.h"
 
-
-void Scene::addObject(Object *object)
+Scene::Scene()
 {
-    object_list.push_back(object);
+	object_list = 0;
+	light_list = 0;
 }
 
-void Scene::addLight(Lighting light)
+void Scene::trace(Ray ray, Object *objects, Hit &hit)
 {
-    light_list.push_back(light);
+	Hit current_hit;
+
+	hit.flag = false;
+	hit.t = 0.0f;
+	hit.what = 0;
+
+	while (objects != 0)
+	{
+		Hit hit_current;
+
+		objects->intersection(ray, hit_current);
+
+		if (hit_current.flag == true)
+		{
+			if (hit.flag == false)
+			{
+				hit = hit_current;
+
+			} else if (hit_current.t < hit.t)
+			{
+				hit = hit_current;
+			}
+		}
+
+		objects = objects->next;
+	}
 }
 
-void Scene::render_image()
+void Scene::raytrace(Ray ray, int level, Object *objects, Light *lights, Colour &colour) 
 {
+	
+	// a default colour if we hit nothing.
+	float red   = 0.2f;
+	float green = 0.2f;
+	float blue  = 0.2f;
 
-}
+	// check we've not recursed too far.
+	level = level - 1;
+	if (level < 0)
+	{
+		return;
+	}
 
-Colour Scene::calculate_lighting(Lighting light, Hit &hit)
-{
-    Colour col;
+	// first step, find the closest primitive
 
-    Vector L = hit.position.getDirection(light.position);
-    L.normalise();
-    Vector I = light.position.getDirection(hit.position);
-    I.normalise();
-    Vector R;
-    hit.normal.reflection(I,R);
-    R.normalise();
-    Vector V = hit.position.getDirection(Vertex (0,0,0));
-    V.normalise();
-    int n = 40;
+	Hit best_hit;
+	trace(ray, objects, best_hit);
 
-    col.red = light.diffuse_intensity *  ( hit.what->diffuse.red*(hit.normal.dot(L))  +  hit.what->specular.red*  pow(R.dot(V),n));
-    col.green = light.diffuse_intensity *  ( hit.what->diffuse.green*(hit.normal.dot(L))  +  hit.what->specular.green*  pow(R.dot(V),n));
-    col.blue = light.diffuse_intensity *  ( hit.what->diffuse.blue*(hit.normal.dot(L))  +  hit.what->specular.blue*  pow(R.dot(V),n));
+	// if we found a primitive then compute the colour we should see
+	if (best_hit.flag)
+	{
 
-    return col;
-}
+		best_hit.what->material->compute_base_colour(colour);
 
-Colour Scene::raytracer(Ray ray, Hit &hit)
-{
-    Colour final_colour = ambient_intensity;
+		Light *light = lights;
 
-    for(Object *object : object_list){
-        object->intersection(ray, hit);
-    }
+		while (light != (Light *)0)
+		{
+			Vector viewer;
+			Vector ldir;
 
-    if (hit.flag != true){
-        // if hit nothing, make background black
-        return Colour (0.0, 0.0, 0.0);
-    }
+			viewer.x = -best_hit.position.x;
+			viewer.y = -best_hit.position.y;
+			viewer.z = -best_hit.position.z;
+			viewer.normalise();
 
-    final_colour.multiply(hit.what->ambient);
+			bool lit;
 
-    for(Lighting light : light_list){
-        Hit shadow_hit;
-        shadow_hit.flag = false;
-        shadow_hit.t = 99999999;
-        
-        Vertex shadow_point = Vertex (hit.position.x-0.00222, hit.position.y-0.00222, hit.position.z-0.00222);
-        Vector shadow_dir = shadow_point.getDirection(light.position);
-        Ray shadow_ray (shadow_point, shadow_dir);
+			lit = light->get_direction(best_hit.position, ldir);
 
-        if (shadow_hit.flag == true){
-            continue;
-        }
+			if (lit)
+			{
+				Colour intensity;
+				Colour scaling;
 
-        // adds diffuse and specular light
-        final_colour = calculate_lighting(light, hit);
-    }
+				light->get_intensity(best_hit.position, scaling);
 
-    return final_colour;
+				best_hit.what->material->compute_light_colour(viewer, best_hit.normal, ldir, intensity);
+
+				intensity.scale(scaling);
+
+				colour.add(intensity);
+			}
+
+			light = light->next;
+		}
+
+		// TODO: compute reflection ray if material supports it.
+		if(1)
+		{
+		}
+
+		// TODO: compute refraction ray if material supports it.
+		if(1)
+		{
+		}
+		
+	}
+	else
+	{
+		colour.r = 0.0f;
+		colour.g = 0.0f;
+		colour.b = 0.0f;
+	}
 }

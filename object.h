@@ -11,17 +11,15 @@
 
 #include "ray.h"
 #include "hit.h"
+#include "material.h"
 
-#include "colour.h"
+
 
 class Object {
 public:
 
 	Object *next;
-	// coefficients
-	Colour ambient;
-	Colour diffuse;
-	Colour specular;
+	Material *material;
 
 	Object()
 	{
@@ -33,20 +31,6 @@ public:
 
 	}
 
-	void set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb)
-	{
-		ambient.red = ar;
-		ambient.green = ag;
-		ambient.blue = ab;
-
-		diffuse.red = dr;
-		diffuse.green = dg;
-		diffuse.blue = db;
-
-		specular.red = sr;
-		specular.green = sg;
-		specular.blue = sb; 
-	}
 };
 
 #endif
