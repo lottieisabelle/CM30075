@@ -80,8 +80,3 @@ void Sphere::intersection(Ray ray, Hit &hit)
 	hit.flag = true;
 	return;
 }
-
-void Sphere::set_coeffs(float ar, float ag, float ab, float dr, float dg, float db, float sr, float sg, float sb)
-{
-  Object::set_coeffs(ar, ag, ab, dr, dg, db, sr, sg, sb);
-}

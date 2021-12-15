@@ -11,9 +11,9 @@
  *
  * On linux.bath.ac.uk:
  *
- * Compile the code using g++ -o lab4executable main_lab4.cpp framebuffer.cpp polymesh.cpp sphere.cpp phong.cpp directional_light.cpp plane.cpp -lm
+ * Compile the code using g++ -o photonmapexe photonmapper.cpp framebuffer.cpp polymesh.cpp sphere.cpp phong.cpp directional_light.cpp plane.cpp -lm
  *
- * Execute the code using ./lab4executable
+ * Execute the code using ./photonmapexe
  *
  * This will produce an image file called test.ppm. You can convert this a png file for viewing using
  *
