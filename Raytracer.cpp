@@ -314,14 +314,33 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
     // compute refraction ray if material supports it.
     if(best_hit.what->material->bool_refraction && best_hit.what->material->k_refraction > 0.0)
     {
-      float n = best_hit.what->material->index_refraction;
+      // calculate cos of angle between incident ray and normal to surface
+      float cos_i = best_hit.normal.dot(ray.direction);
+      clamp(cos_i); // limit between -1 and 1
+
+      float n_out;
+      float n_in;
+
+      // assume
+      n_out = best_hit.what->material->ior_surround;
+      n_in = best_hit.what->material->ior_object;
+
+      // unless
+      if (cos_i < 0){
+        n_out = best_hit.what->material->ior_object;
+        n_in = best_hit.what->material->ior_surround;
+      }
+
+      float n = n_in/n_out;
+      best_hit.what->material->index_refraction = n;
+      //float n = best_hit.what->material->index_refraction;
       // tray.dir = refraction(ray.dir, hit.normal, hit.ior);
       
       // cos θi = N.I
       // I = incident ray direction vector
       // N = normal to surface direction vector
-      float cos_i = best_hit.normal.dot(ray.direction);
-      clamp(cos_i);
+      //float cos_i = best_hit.normal.dot(ray.direction);
+      //clamp(cos_i);
 
       // cos θt = sqrt(1 – (1/η2) * (1 - cos2 θi) )
       float n2 = n*n;
@@ -1008,20 +1027,20 @@ int main(int argc, char *argv[])
   
   Sphere *sphere4 = new Sphere(v4,2.0f);
   Phong bp8;
-  bp8.ambient.r = 0.0f; 
-	bp8.ambient.g = 0.0f;
-	bp8.ambient.b = 0.0f;
-	bp8.diffuse.r = 0.0f;
-	bp8.diffuse.g = 0.0f;
-	bp8.diffuse.b = 0.0f;
-	bp8.specular.r = 0.1f; 
-	bp8.specular.g = 0.1f;
-	bp8.specular.b = 0.1f;
+  bp8.ambient.r = 1.0f; 
+	bp8.ambient.g = 1.0f;
+	bp8.ambient.b = 1.0f;
+	bp8.diffuse.r = 1.0f;
+	bp8.diffuse.g = 1.0f;
+	bp8.diffuse.b = 1.0f;
+	bp8.specular.r = 0.2f; 
+	bp8.specular.g = 0.2f;
+	bp8.specular.b = 0.2f;
 	bp8.power = 40.0f;
 
  	sphere4->material = &bp8;
 
-  sphere4->material->bool_reflection = true;
+  sphere4->material->bool_reflection = false;
   sphere4->material->bool_refraction = true;
   sphere4->material->bool_specular = false;
   sphere4->material->fresnel = false;
