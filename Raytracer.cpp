@@ -986,7 +986,7 @@ int main(int argc, char *argv[])
   sphere3->material->bool_reflection = true;
   sphere3->material->bool_refraction = false;
   sphere3->material->bool_specular = true;
-  sphere3->material->k_reflection = 0.5;
+  sphere3->material->k_reflection = 0.5f;
   //sphere3->material->ior_object = 1.33f; // water
   //sphere3->material->ior_object = 1.38f; // soap bubbles
   //sphere3->material->ior_surround = 1.0003f; // air

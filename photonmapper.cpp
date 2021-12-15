@@ -11,7 +11,7 @@
  *
  * On linux.bath.ac.uk:
  *
- * Compile the code using g++ -o photonmapexe photonmapper.cpp framebuffer.cpp polymesh.cpp sphere.cpp phong.cpp directional_light.cpp plane.cpp -lm
+ * Compile the code using g++ -o photonmapexe photonmapper.cpp framebuffer.cpp polymesh.cpp sphere.cpp phong.cpp directional_light.cpp point_light.cpp -lm
  *
  * Execute the code using ./photonmapexe
  *
@@ -970,10 +970,10 @@ int main(int argc, char *argv[])
   Sphere *sphere3 = new Sphere(v3,2.0f);
   Phong bp7;
   bp7.ambient.r = 0.0f; 
-	bp7.ambient.g = 0.2f;
+	bp7.ambient.g = 0.0f;
 	bp7.ambient.b = 0.0f;
 	bp7.diffuse.r = 0.0f;
-	bp7.diffuse.g = 0.4f;
+	bp7.diffuse.g = 0.0f;
 	bp7.diffuse.b = 0.0f;
 	bp7.specular.r = 0.4f; 
 	bp7.specular.g = 0.4f;
@@ -986,6 +986,7 @@ int main(int argc, char *argv[])
   sphere3->material->bool_reflection = true;
   sphere3->material->bool_refraction = false;
   sphere3->material->bool_specular = true;
+  sphere3->material->k_reflection = 0.6f;
   //sphere3->material->ior_object = 1.33f; // water
   //sphere3->material->ior_object = 1.38f; // soap bubbles
   //sphere3->material->ior_surround = 1.0003f; // air
@@ -1050,10 +1051,6 @@ int main(int argc, char *argv[])
       //raytrace(ray, pm, pl, colour, depth, d); // original raytracer
 
       p_raytrace(ray, pm, pl, colour, depth, d); // raytracer + photon data
-      
-      //Hit h;
-      //trace(ray, pm, h);
-      //colour = radiance(h);
 
       // visualise photons
       if(0){
@@ -1076,14 +1073,8 @@ int main(int argc, char *argv[])
         }
       }
       
-
-      // result of raytracing + photon map data
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
-      // result of photon map
-      //fb->plotPixel(x, y, col.r, col.g, col.b);
-
-
-      //fb->plotDepth(x,y, depth);
+      
     }
 
     //printf("*");
@@ -1107,7 +1098,7 @@ int main(int argc, char *argv[])
   // set pixels again
   
   // Output the framebuffer.
-  fb->writeRGBFile((char *)"test.ppm");
+  fb->writeRGBFile((char *)"PhotonTest.ppm");
   //  fb->writeDepthFile((char *)"depth.ppm");
   return 0;
   
