@@ -986,7 +986,7 @@ int main(int argc, char *argv[])
   sphere3->material->bool_reflection = true;
   sphere3->material->bool_refraction = false;
   sphere3->material->bool_specular = true;
-  sphere3->material->k_reflection = 0.6f;
+  sphere3->material->k_reflection = 0.8f;
   //sphere3->material->ior_object = 1.33f; // water
   //sphere3->material->ior_object = 1.38f; // soap bubbles
   //sphere3->material->ior_surround = 1.0003f; // air
@@ -998,7 +998,7 @@ int main(int argc, char *argv[])
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
 
-  ceiling_pm->next = sphere3;
+  //ceiling_pm->next = sphere3;
 
   //ceiling_pm->next = sphere;
   //sphere->next = sphere2;
@@ -1089,17 +1089,10 @@ int main(int argc, char *argv[])
 
     //cerr << "*" << flush;
   }
-
-  // blur middle line maybe
-  // for image height in pixels
-  // get 2 middle pixels colour
-  // x/2 and x/2 +1
-  // get average of the two 
-  // set pixels again
   
   // Output the framebuffer.
   fb->writeRGBFile((char *)"PhotonTest.ppm");
-  //  fb->writeDepthFile((char *)"depth.ppm");
+
   return 0;
   
 }

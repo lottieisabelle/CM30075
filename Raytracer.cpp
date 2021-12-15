@@ -970,10 +970,10 @@ int main(int argc, char *argv[])
   Sphere *sphere3 = new Sphere(v3,2.0f);
   Phong bp7;
   bp7.ambient.r = 0.0f; 
-	bp7.ambient.g = 0.2f;
+	bp7.ambient.g = 0.0f;
 	bp7.ambient.b = 0.0f;
 	bp7.diffuse.r = 0.0f;
-	bp7.diffuse.g = 0.4f;
+	bp7.diffuse.g = 0.0f;
 	bp7.diffuse.b = 0.0f;
 	bp7.specular.r = 0.4f; 
 	bp7.specular.g = 0.4f;
@@ -991,6 +991,33 @@ int main(int argc, char *argv[])
   //sphere3->material->ior_object = 1.38f; // soap bubbles
   //sphere3->material->ior_surround = 1.0003f; // air
 
+  // glass ball
+  Vertex v4;
+  v4.x = 7.5f;
+  v4.y = -3.0f;
+  v4.z = 12.0f;
+  
+  Sphere *sphere4 = new Sphere(v4,2.0f);
+  Phong bp8;
+  bp8.ambient.r = 0.0f; 
+	bp8.ambient.g = 0.0f;
+	bp8.ambient.b = 0.0f;
+	bp8.diffuse.r = 0.0f;
+	bp8.diffuse.g = 0.4f;
+	bp8.diffuse.b = 0.0f;
+	bp8.specular.r = 0.4f; 
+	bp8.specular.g = 0.4f;
+	bp8.specular.b = 0.4f;
+	bp8.power = 40.0f;
+
+ 	sphere4->material = &bp8;
+
+  sphere4->material->bool_reflection = true;
+  sphere4->material->bool_refraction = true;
+  sphere4->material->bool_specular = true;
+  sphere4->material->ior_object = 1.52f; // glass
+  sphere4->material->ior_surround = 1.0003f; // air
+
   // link objects
   pm->next = background_pm;
   background_pm->next = floor_pm;
@@ -1000,6 +1027,7 @@ int main(int argc, char *argv[])
   ceiling_pm->next = sphere;
   sphere->next = sphere2;
   sphere2->next = sphere3;
+  sphere3->next = sphere4;
   
   // generate shooting ray from camera point
   Ray ray;
