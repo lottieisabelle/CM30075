@@ -368,21 +368,21 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
 Colour radiance(Hit &hit)
 {
-  float count = 100;
-  float radius = 2.0f;
+  float count = 200;
+  //float radius = 2.0f;
   
   
   vector<Photon*> photons;
   // get n nearest photons at hit point
-  //photons = global_tree.nearest(hit.position, count);
+  photons = global_tree.nearest(hit.position, count);
 
   // get neartest photons within radius r of hit point
-  photons = global_tree.within(hit.position, radius);
+  //photons = global_tree.within(hit.position, radius);
 
-  if(photons.empty()){
-    return Colour (0,0,0,0);
-  }
-  count = photons.size();
+  //if(photons.empty()){
+    //return Colour (0,0,0,0);
+  //}
+  //count = photons.size();
 
 
   int shadow_photons;
@@ -406,10 +406,10 @@ Colour radiance(Hit &hit)
   furthest = photons.back()->position;
 
   // calculate distance between hit.position and furthest point
-  //float xSqr = (hit.position.x - furthest.x) * (hit.position.x - furthest.x);
-  //float ySqr = (hit.position.y - furthest.y) * (hit.position.y - furthest.y);
-  //float zSqr = (hit.position.z - furthest.z) * (hit.position.z - furthest.z);
-  //float radius = sqrt(xSqr + ySqr + zSqr);
+  float xSqr = (hit.position.x - furthest.x) * (hit.position.x - furthest.x);
+  float ySqr = (hit.position.y - furthest.y) * (hit.position.y - furthest.y);
+  float zSqr = (hit.position.z - furthest.z) * (hit.position.z - furthest.z);
+  float radius = sqrt(xSqr + ySqr + zSqr);
   
   float area = M_PI*radius*radius;
 
@@ -754,7 +754,7 @@ void cast_photons(Light *light, Object *objects)
 
   Hit *hit = new Hit();
   
-  int n = 1000000; // number of photons TODO set number
+  int n = 300000; // number of photons TODO set number
 
   printf("\nPhoton casting:\n");
 

@@ -231,7 +231,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 	      lit=false;//light is facing wrong way.
       }
 
-      if(lit)
+      if(lit && !best_hit.what->material->bool_refraction)
       {
       
         Ray shadow_ray;
@@ -314,6 +314,60 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
     // compute refraction ray if material supports it.
     if(best_hit.what->material->bool_refraction && best_hit.what->material->k_refraction > 0.0)
     {
+      // new version
+      // calculate cos of angle between incident ray and normal to surface
+      float cos_i = best_hit.normal.dot(ray.direction);
+      clamp(cos_i); // limit between -1 and 1
+
+      float eta_in = 1.0;
+      float eta_out = best_hit.what->material->ior_object;
+
+      Vector normal = best_hit.normal;
+
+      if(cos_i < 0){
+        cos_i = -cos_i;
+      } else {
+        eta_in = best_hit.what->material->ior_object;
+        eta_out = 1.0;
+        normal.negate();
+      }
+
+      float eta = eta_in / eta_out;
+      best_hit.what->material->index_refraction = eta;
+
+      float k = 1 - eta * eta * (1 - cos_i * cos_i);
+
+      if(k < 0){
+        // no refraction = total internal reflection
+        return;
+      }
+
+      Vector new_dir = eta * ray.direction + (eta * cos_i - sqrt(k)) * normal;
+
+      Vertex new_pos;
+      new_pos.x = best_hit.position.x + 0.00222 * new_dir.x;
+      new_pos.y = best_hit.position.y + 0.00222 * new_dir.y;
+      new_pos.z = best_hit.position.z + 0.00222 * new_dir.z;
+      
+      Ray new_ray (new_pos, new_dir);
+
+      //best_hit.what->material->k_refraction = k;      
+
+      float kt = best_hit.what->material->k_refraction;
+
+      Colour kt_col;
+      kt_col.r = kt;
+      kt_col.g = kt;
+      kt_col.b = kt;
+
+      Colour col;
+      raytrace(new_ray, objects, lights, col, depth, d-1);
+
+      col.scale(kt_col);
+      colour.add(col);
+
+      /*
+
       // calculate cos of angle between incident ray and normal to surface
       float cos_i = best_hit.normal.dot(ray.direction);
       clamp(cos_i); // limit between -1 and 1
@@ -373,6 +427,8 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
       col.scale(kt_col);
       colour.add(col);
+
+      */
 
     }
 
@@ -1002,9 +1058,9 @@ int main(int argc, char *argv[])
 	bp7.diffuse.r = 0.0f;
 	bp7.diffuse.g = 0.0f;
 	bp7.diffuse.b = 0.0f;
-	bp7.specular.r = 0.0f; 
-	bp7.specular.g = 0.0f;
-	bp7.specular.b = 0.0f;
+	bp7.specular.r = 0.5f; 
+	bp7.specular.g = 0.5f;
+	bp7.specular.b = 0.5f;
 	bp7.power = 40.0f;
   bp7.reflection = 0.9f;
 
@@ -1027,15 +1083,15 @@ int main(int argc, char *argv[])
   
   Sphere *sphere4 = new Sphere(v4,2.0f);
   Phong bp8;
-  bp8.ambient.r = 1.0f; 
-	bp8.ambient.g = 1.0f;
-	bp8.ambient.b = 1.0f;
-	bp8.diffuse.r = 1.0f;
-	bp8.diffuse.g = 1.0f;
-	bp8.diffuse.b = 1.0f;
-	bp8.specular.r = 0.2f; 
-	bp8.specular.g = 0.2f;
-	bp8.specular.b = 0.2f;
+  bp8.ambient.r = 0.0f; 
+	bp8.ambient.g = 0.0f;
+	bp8.ambient.b = 0.0f;
+	bp8.diffuse.r = 0.0f;
+	bp8.diffuse.g = 0.0f;
+	bp8.diffuse.b = 0.0f;
+	bp8.specular.r = 0.0f; 
+	bp8.specular.g = 0.0f;
+	bp8.specular.b = 0.0f;
 	bp8.power = 40.0f;
 
  	sphere4->material = &bp8;
