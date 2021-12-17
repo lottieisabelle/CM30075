@@ -162,36 +162,6 @@ void object_test(Ray ray, Object *objects, Hit &best_hit)
   return;
 }
 
-void trace(Ray ray, Object *objects, Hit &hit)
-{
-	Hit current_hit;
-
-	hit.flag = false;
-	hit.t = 0.0f;
-	hit.what = 0;
-
-	while (objects != 0)
-	{
-		Hit hit_current;
-
-		objects->intersection(ray, hit_current);
-
-		if (hit_current.flag == true)
-		{
-			if (hit.flag == false)
-			{
-				hit = hit_current;
-
-			} else if (hit_current.t < hit.t)
-			{
-				hit = hit_current;
-			}
-		}
-
-		objects = objects->next;
-	}
-}
-
 void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &depth, int d)
 {
   if (d <= 0){

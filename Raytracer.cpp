@@ -162,36 +162,6 @@ void object_test(Ray ray, Object *objects, Hit &best_hit)
   return;
 }
 
-void trace(Ray ray, Object *objects, Hit &hit)
-{
-	Hit current_hit;
-
-	hit.flag = false;
-	hit.t = 0.0f;
-	hit.what = 0;
-
-	while (objects != 0)
-	{
-		Hit hit_current;
-
-		objects->intersection(ray, hit_current);
-
-		if (hit_current.flag == true)
-		{
-			if (hit.flag == false)
-			{
-				hit = hit_current;
-
-			} else if (hit_current.t < hit.t)
-			{
-				hit = hit_current;
-			}
-		}
-
-		objects = objects->next;
-	}
-}
-
 void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &depth, int d)
 {
   if (d <= 0){
@@ -279,7 +249,6 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
       best_hit.what->material->k_reflection = kr;
       best_hit.what->material->k_refraction = kt;
 
-      //printf("%f , %f \n", kr, kt);
     }
 
     // compute reflection ray if material supports it.
@@ -314,8 +283,7 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
     // compute refraction ray if material supports it.
     if(best_hit.what->material->bool_refraction && best_hit.what->material->k_refraction > 0.0)
     {
-      // new version
-      // calculate cos of angle between incident ray and normal to surface
+      
       float cos_i = best_hit.normal.dot(ray.direction);
       clamp(cos_i); // limit between -1 and 1
 
@@ -365,70 +333,6 @@ void raytrace(Ray ray, Object *objects, Light *lights, Colour &colour, float &de
 
       col.scale(kt_col);
       colour.add(col);
-
-      /*
-
-      // calculate cos of angle between incident ray and normal to surface
-      float cos_i = best_hit.normal.dot(ray.direction);
-      clamp(cos_i); // limit between -1 and 1
-
-      float n_out;
-      float n_in;
-
-      // assume
-      n_out = best_hit.what->material->ior_surround;
-      n_in = best_hit.what->material->ior_object;
-
-      // unless
-      if (cos_i < 0){
-        n_out = best_hit.what->material->ior_object;
-        n_in = best_hit.what->material->ior_surround;
-      }
-
-      float n = n_in/n_out;
-      best_hit.what->material->index_refraction = n;
-      //float n = best_hit.what->material->index_refraction;
-      // tray.dir = refraction(ray.dir, hit.normal, hit.ior);
-      
-      // cos θi = N.I
-      // I = incident ray direction vector
-      // N = normal to surface direction vector
-      //float cos_i = best_hit.normal.dot(ray.direction);
-      //clamp(cos_i);
-
-      // cos θt = sqrt(1 – (1/η2) * (1 - cos2 θi) )
-      float n2 = n*n;
-      float cos_i2 = cos_i*cos_i;
-      float cos_t2 = 1 - (1/n2) * (1 - cos_i2);
-
-      float cos_t = sqrt(cos_t2);
-      clamp(cos_t);
-
-      // T = 1/η * I – (cos θt – (1/η)* cos θi ) * N
-      Vector T_dir = 1/n * ray.direction - (cos_t - (1/n) * cos_i) * best_hit.normal;
-      
-      // tray.pos = hit.pos + small_e * tray.dir;
-      Vertex T_pos;
-      T_pos.x = best_hit.position.x + 0.00222 * T_dir.x;
-      T_pos.y = best_hit.position.y + 0.00222 * T_dir.y;
-      T_pos.z = best_hit.position.z + 0.00222 * T_dir.z;
-      
-      Ray T_ray (T_pos, T_dir);
-
-      float kt = best_hit.what->material->k_refraction;
-
-      Colour kt_col;
-      kt_col.r = kt;
-      kt_col.g = kt;
-      kt_col.b = kt;
-
-      Colour col;
-      raytrace(T_ray, objects, lights, col, depth, d-1);
-
-      col.scale(kt_col);
-      colour.add(col);
-
-      */
 
     }
 
@@ -1081,6 +985,7 @@ int main(int argc, char *argv[])
   //v4.y = -3.0f;
   //v4.z = 10.0f;
 
+  // TODO : put glass ball back for final image render
   // move glass ball in front of teapot
   v4.x = 0.0f;
   v4.y = -1.0f;
@@ -1117,6 +1022,8 @@ int main(int argc, char *argv[])
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
   ceiling_pm->next = sphere4;
+
+  // TODO : put objects back for final image render
   //ceiling_pm->next = sphere;
   //sphere->next = sphere2;
   //sphere2->next = sphere3;
@@ -1170,27 +1077,6 @@ int main(int argc, char *argv[])
 
       //p_raytrace(ray, pm, pl, colour, depth, d); // raytracer + photon data
       
-
-      // visualise photons
-      if(0){
-        Hit hit;
-        trace(ray, pm, hit);
-        Photon* photon;
-        photon = global_tree.nearest(hit.position);
-        if(photon->p_type == 'd'){
-          colour.r = 1.0;
-          colour.g = 1.0;
-          colour.b = 1.0;
-        } else if(photon->p_type == 'i'){
-          colour.r = 1.0;
-          colour.g = 0.0;
-          colour.b = 0.0;
-        } else if(photon->p_type == 's'){
-          colour.r = 0.0;
-          colour.g = 0.0;
-          colour.b = 1.0;
-        }
-      }
       
       fb->plotPixel(x, y, colour.r, colour.g, colour.b);
       
