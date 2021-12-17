@@ -981,15 +981,15 @@ int main(int argc, char *argv[])
 
   // glass ball
   Vertex v4;
-  //v4.x = 6.0f;
-  //v4.y = -3.0f;
-  //v4.z = 10.0f;
+  v4.x = 6.0f;
+  v4.y = -3.0f;
+  v4.z = 10.0f;
 
   // TODO : put glass ball back for final image render
   // move glass ball in front of teapot
-  v4.x = 0.0f;
-  v4.y = -1.0f;
-  v4.z = 4.0f;
+  //v4.x = 0.0f;
+  //v4.y = -1.0f;
+  //v4.z = 4.0f;
   
   Sphere *sphere4 = new Sphere(v4,1.0f);
   Phong bp8;
@@ -1021,13 +1021,10 @@ int main(int argc, char *argv[])
   floor_pm->next = left_wall;
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
-  ceiling_pm->next = sphere4;
-
-  // TODO : put objects back for final image render
-  //ceiling_pm->next = sphere;
-  //sphere->next = sphere2;
-  //sphere2->next = sphere3;
-  //sphere3->next = sphere4;
+  ceiling_pm->next = sphere;
+  sphere->next = sphere2;
+  sphere2->next = sphere3;
+  sphere3->next = sphere4;
   
   // generate shooting ray from camera point
   Ray ray;
