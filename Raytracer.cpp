@@ -36,7 +36,7 @@
 #include "plane.h"
 #include "photon.h"
 #include "point_light.h"
-// 3rd party kd tree : https://github.com/xavierholt/kd TODO ?
+// 3rd party kd tree : https://github.com/xavierholt/kd 
 #include "kd-master/src/core.h"
 #include "kd-master/src/tree.h"
 
@@ -864,8 +864,8 @@ void cast_photons(Light *light, Object *objects)
 
 int main(int argc, char *argv[])
 {
-  int width = 256;
-  int height = 256;
+  int width = 2048;
+  int height = 2048;
   // Create a framebuffer
   FrameBuffer *fb = new FrameBuffer(width,height);
 
@@ -993,15 +993,15 @@ int main(int argc, char *argv[])
   
   Sphere *sphere = new Sphere(v, 0.5);
   Phong bp2;
-  bp2.ambient.r = 0.5f; // 0.5 was 0.6
-	bp2.ambient.g = 0.5f;
-	bp2.ambient.b = 0.5f;
-	bp2.diffuse.r = 0.5f;
-	bp2.diffuse.g = 0.5f;
-	bp2.diffuse.b = 0.5f;
-	bp2.specular.r = 0.3f; // 0.3 was 0.4
-	bp2.specular.g = 0.3f;
-	bp2.specular.b = 0.3f;
+  bp2.ambient.r = 0.0f; // 0.5 was 0.6
+	bp2.ambient.g = 0.0f;
+	bp2.ambient.b = 0.0f;
+	bp2.diffuse.r = 0.0f;
+	bp2.diffuse.g = 0.0f;
+	bp2.diffuse.b = 0.0f;
+	bp2.specular.r = 0.2f; // 0.3 was 0.4
+	bp2.specular.g = 0.2f;
+	bp2.specular.b = 0.2f;
 	bp2.power = 40.0f;
 
   sphere->material = &bp2;
@@ -1023,15 +1023,15 @@ int main(int argc, char *argv[])
   
   Sphere *sphere2 = new Sphere(v2,0.85f);
   Phong bp3;
-  bp3.ambient.r = 0.5f; // 0.5 was 0.6
-	bp3.ambient.g = 0.5f;
-	bp3.ambient.b = 0.5f;
-	bp3.diffuse.r = 0.5f;
-	bp3.diffuse.g = 0.5f;
-	bp3.diffuse.b = 0.5f;
-	bp3.specular.r = 0.3f; // 0.3 was 0.4
-	bp3.specular.g = 0.3f;
-	bp3.specular.b = 0.3f;
+  bp3.ambient.r = 0.0f; // 0.5 was 0.6
+	bp3.ambient.g = 0.0f;
+	bp3.ambient.b = 0.0f;
+	bp3.diffuse.r = 0.0f;
+	bp3.diffuse.g = 0.0f;
+	bp3.diffuse.b = 0.0f;
+	bp3.specular.r = 0.2f; // 0.3 was 0.4
+	bp3.specular.g = 0.2f;
+	bp3.specular.b = 0.2f;
 	bp3.power = 40.0f;
 
  	sphere2->material = &bp3;
@@ -1058,9 +1058,9 @@ int main(int argc, char *argv[])
 	bp7.diffuse.r = 0.0f;
 	bp7.diffuse.g = 0.0f;
 	bp7.diffuse.b = 0.0f;
-	bp7.specular.r = 0.5f; 
-	bp7.specular.g = 0.5f;
-	bp7.specular.b = 0.5f;
+	bp7.specular.r = 0.2f; 
+	bp7.specular.g = 0.2f;
+	bp7.specular.b = 0.2f;
 	bp7.power = 40.0f;
   bp7.reflection = 0.9f;
 
@@ -1077,11 +1077,16 @@ int main(int argc, char *argv[])
 
   // glass ball
   Vertex v4;
-  v4.x = 7.0f;
-  v4.y = -3.0f;
-  v4.z = 11.5f;
+  //v4.x = 6.0f;
+  //v4.y = -3.0f;
+  //v4.z = 10.0f;
+
+  // move glass ball in front of teapot
+  v4.x = 0.0f;
+  v4.y = -1.0f;
+  v4.z = 4.0f;
   
-  Sphere *sphere4 = new Sphere(v4,2.0f);
+  Sphere *sphere4 = new Sphere(v4,1.0f);
   Phong bp8;
   bp8.ambient.r = 0.0f; 
 	bp8.ambient.g = 0.0f;
@@ -1089,16 +1094,16 @@ int main(int argc, char *argv[])
 	bp8.diffuse.r = 0.0f;
 	bp8.diffuse.g = 0.0f;
 	bp8.diffuse.b = 0.0f;
-	bp8.specular.r = 0.0f; 
-	bp8.specular.g = 0.0f;
-	bp8.specular.b = 0.0f;
+	bp8.specular.r = 0.2f; 
+	bp8.specular.g = 0.2f;
+	bp8.specular.b = 0.2f;
 	bp8.power = 40.0f;
 
  	sphere4->material = &bp8;
 
   sphere4->material->bool_reflection = false;
   sphere4->material->bool_refraction = true;
-  sphere4->material->bool_specular = false;
+  sphere4->material->bool_specular = true;
   sphere4->material->fresnel = false;
   sphere4->material->k_refraction = 0.9f;
   sphere4->material->k_reflection = 0.1f;
@@ -1111,10 +1116,11 @@ int main(int argc, char *argv[])
   floor_pm->next = left_wall;
   left_wall->next = right_wall;
   right_wall->next = ceiling_pm;
-  ceiling_pm->next = sphere;
-  sphere->next = sphere2;
-  sphere2->next = sphere3;
-  sphere3->next = sphere4;
+  ceiling_pm->next = sphere4;
+  //ceiling_pm->next = sphere;
+  //sphere->next = sphere2;
+  //sphere2->next = sphere3;
+  //sphere3->next = sphere4;
   
   // generate shooting ray from camera point
   Ray ray;
@@ -1164,9 +1170,6 @@ int main(int argc, char *argv[])
 
       //p_raytrace(ray, pm, pl, colour, depth, d); // raytracer + photon data
       
-      //Hit h;
-      //trace(ray, pm, h);
-      //colour = radiance(h);
 
       // visualise photons
       if(0){
@@ -1196,6 +1199,7 @@ int main(int argc, char *argv[])
     //printf("*");
     float div = ((float) y) / ((float) height);
     
+    // print out percentage of image rendering complete
     div = div * 100.0;
     int z = (int) div;
     if(z == increment){
@@ -1205,18 +1209,11 @@ int main(int argc, char *argv[])
 
     //cerr << "*" << flush;
   }
-
-  // blur middle line maybe
-  // for image height in pixels
-  // get 2 middle pixels colour
-  // x/2 and x/2 +1
-  // get average of the two 
-  // set pixels again
   
   // Output the framebuffer.
   fb->writeRGBFile((char *)"Raytraced.ppm");
   printf("\nImage rendered.\n");
-  //  fb->writeDepthFile((char *)"depth.ppm");
+  
   return 0;
   
 }

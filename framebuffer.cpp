@@ -122,6 +122,7 @@ int FrameBuffer::writeRGBFile(char *filename)
   float diff = max - min;
   if (diff == 0.0f) diff = 1.0f;
 
+
   outfile << "P6\n";
   outfile << this->width << " " << this->height << "\n255\n";
 
